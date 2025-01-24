@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumiere Proxy Dashboard</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Side Navigation Bar -->
+  <div class="sidenav">
+    <h2>System Dashboard</h2>
+    <a href="#" class="active">System Information</a>
+    <a href="/logs.html">Logs</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="card-container">
+      <div class="card">
+        <h1>Current CPU Usage</h1>
+        <div class="value" id="cpu-usage">Loading...</div>
+        <div class="refresh-time" id="cpu-refresh-time">Updating...</div>
+      </div>
+
+      <div class="card">
+        <h1>Current RAM Usage</h1>
+        <div class="value" id="ram-usage">Loading...</div>
+        <div class="refresh-time" id="ram-refresh-time">Updating...</div>
+      </div>
+      <div class="card">
+        <h1>Root FS Used</h1>
+        <div class="value" id="root-fs-usage">Loading...</div>
+        <div class="refresh-time" id="root-fs-refresh-time">Updating...</div>
+      </div>
+      <div class="card">
+        <h1>Server Uptime</h1>
+        <div class="value" id="server-uptime">Loading...</div>
+        <div class="refresh-time" id="uptime-refresh-time">Updating...</div>
+      </div>
+      <div class="card-container1">
+        <div class="sumcard">
+          <h1>Summary</h1>
+          <div class="value" id="summary">Click the button below to generate a summary.</div>
+          <button id="generate-summary-button" style="margin-top: 10px;">Generate Summary</button>
+        </div>
+      </div>      
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
