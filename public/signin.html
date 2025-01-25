@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In</title>
+  <link rel="stylesheet" href="signinstyle.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+  <main>
+    <div class="main-container">
+      <!-- Left Image Section -->
+      <div class="image-section">
+        <img src="/images/person1.jpeg" alt="Welcome Image">
+      </div>
+
+      <!-- Right Form Section -->
+      <div class="form-section">
+        <div class="form-container">
+          <h2>Sign In</h2>
+          <form id="sign-in-form">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email" required>
+          
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required>
+          
+            <!-- Sign In Button -->
+            <button type="button" id="sign-in-button" class="sign-in-button">Sign In</button>
+          
+            <!-- Placeholder for MFA input -->
+            <div id="mfa-section" style="margin-top: 1rem;"></div>
+          
+            <!-- Submit Button for MFA -->
+            <button type="submit" id="submit-mfa-button" class="sign-in-button" style="display: none;">Submit</button>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Dynamically load the navbar
+    fetch('navbar.html')
+      .then(response => {
+        if (!response.ok) throw new Error(`Failed to load navbar: ${response.statusText}`);
+        return response.text();
+      })
+      .then(data => {
+        document.getElementById('navbar-placeholder').innerHTML = data;
+      })
+      .catch(error => console.error(error));
+
+
+       
+  // Handle the Sign In button click
+  document.getElementById('sign-in-button').addEventListener('click', function () {
+    // Get the email and password input values
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    // Validate email and password inputs
+    if (!email) {
+      alert('Please enter your email.');
+      return;
+    }
+
+    if (!password) {
+      alert('Please enter your password.');
+      return;
+    }
+
+    // Dynamically add the MFA input field if not already added
+    const mfaSection = document.getElementById('mfa-section');
+    if (!document.getElementById('mfa-code')) {
+      // Create the MFA input field
+      const mfaLabel = document.createElement('label');
+      mfaLabel.setAttribute('for', 'mfa-code');
+      mfaLabel.textContent = 'Please enter your 6 Digit MFA Code';
+
+      const mfaInput = document.createElement('input');
+      mfaInput.setAttribute('type', 'text');
+      mfaInput.setAttribute('id', 'mfa-code');
+      mfaInput.setAttribute('placeholder', 'Enter your 6-digit MFA code');
+      mfaInput.setAttribute('maxlength', '6'); // Limit input to 6 characters
+      mfaInput.setAttribute('required', true);
+
+      // Append the label and input to the MFA section
+      mfaSection.appendChild(mfaLabel);
+      mfaSection.appendChild(mfaInput);
+
+      // Show the Submit button for MFA
+      document.getElementById('submit-mfa-button').style.display = 'inline-block';
+
+      // Hide the original Sign In button
+      document.getElementById('sign-in-button').style.display = 'none';
+    }
+  });
+
+  // Handle the final form submission
+  document.getElementById('sign-in-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const mfaCode = document.getElementById('mfa-code').value.trim();
+
+    // Validate MFA code
+    if (mfaCode.length !== 6 || !/^\d+$/.test(mfaCode)) {
+      alert('MFA code must be exactly 6 digits.');
+      return;
+    }
+
+    // Final form submission or API call logic
+    alert('Form submitted successfully with MFA code: ' + mfaCode);
+    // Perform form submission or API call here
+  });
+
+  </script>
+</body>
+</html>
