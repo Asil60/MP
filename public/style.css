@@ -5,12 +5,11 @@ body {
   padding: 0;
   background-color: #121212;
   color: #e0e0e0;
-  
 }
 
 /* Navbar */
 #navbar-placeholder {
-  position: fixed;
+ position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -21,27 +20,28 @@ body {
 .layout-container {
   display: grid;
   grid-template-columns: 250px 4fr 1.5fr; /* Sidebar, Main Content, Summary */
-  padding-top: 80px; /* Adjust this value to match the actual height of the navbar */
+  padding-top: 0px; /* Adjust to match navbar height */
   height: 100vh; /* Full height of the viewport */
   gap: 20px;
-  box-sizing: border-box; /* Ensure padding and border are included in height calculations */
+  box-sizing: border-box; /* Ensure padding and border are included in height calculations *//* Prevent unwanted scrolling */
 }
-
 
 /* Sidebar */
 .sidenav {
   background-color: #1f1f1f;
   color: #e0e0e0;
   padding: 20px;
-  height: 100%;
-  width: 200px;
+  height: 100%; /* Full height of viewport */
+  width: 250px; /* Adjusted for consistency with layout */
+  box-sizing: border-box;
   transition: width 0.3s ease;
+  overflow: hidden; /* Prevent scroll inside sidebar */
 }
 
 .sidenav h2 {
   font-size: 1.2rem;
   margin-bottom: 20px;
-  white-space: nowrap; /* Prevent text from wrapping */
+  white-space: nowrap;
 }
 
 .sidenav .sidenav-link {
@@ -76,7 +76,7 @@ body {
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Flexible card sizes */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Flexible card sizes */
   gap: 15px;
 }
 
@@ -104,16 +104,19 @@ body {
   font-size: 0.8rem; /* Smaller font size for timestamps */
   color: #aaa;
 }
-
+.titles {
+  text-align: center;
+}
 /* Summary Section */
 .summary-section {
   background-color: #1e1e2e;
   border: 1px solid #333333;
   border-radius: 10px;
   padding: 20px;
-  text-align: center;
+  text-align: justify;
   margin-right: 20px; /* Add gap from the edge */
-  height: 100%;
+  height: 90%; /* Adjust height relative to viewport */
+  margin-top: 21px;
 }
 
 .summary-section h1 {
@@ -126,17 +129,52 @@ body {
   margin-bottom: 20px;
 }
 
-button {
-  padding: 8px 16px;
+/* Styling for the summary box */
+#summary {
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  color: #666;
+  padding: 1px;
+  width: 100%;
+  height: 60%;
+  overflow-y: auto; /* Enable vertical scrolling */
+  border-radius: 4px;
+  margin-bottom: 10px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Slight inner shadow */
+}
+
+/* Button styling */
+#generate-summary-button {
+  padding: 10px 20px;
+  margin-top: 50px;
+  font-size: 16px;
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
 }
 
-button:hover {
-  background-color: #0056b3;
+#generate-summary-button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+/* GPT Input Section */
+.gpt-input-section {
+  margin-top: 20px;
+}
+
+#gpt-input {
+  width: 100%; /* Fixed width */
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding: 1px;
+  margin: 0 auto; /* Center the textarea */
+  font-size: 14px;
+  resize: none; /* Disable manual resizing */
+  overflow: hidden; /* Prevent horizontal scrollbar */
+  min-height: 40px; /* Initial small height */
 }
 
 /* Responsive Adjustments */

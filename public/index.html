@@ -5,75 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lumiere Proxy Dashboard</title>
   <link rel="stylesheet" href="./style.css">
+  <script src="askgpt.js"></script>
 </head>
 <body>
-  <!-- Top Navbar -->
-  <div id="navbar-placeholder"></div>
-  <script>
-    fetch('navbar.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('navbar-placeholder').innerHTML = data;
-      })
-      .catch(error => console.error(error));
-  </script>
 
-  <!-- Main Layout -->
-  <div class="layout-container">
-    <!-- Sidebar -->
-    <div class="sidenav">
-      <h2>System Dashboard</h2>
-      <a href="#" class="sidenav-link active">
-        <span class="icon">ℹ️</span> <span class="text">System Information</span>
-      </a>
-      <a href="#" class="sidenav-link">
-        <span class="icon">🖥️</span> <span class="text">Server A</span>
-      </a>
-      <a href="#" class="sidenav-link">
-        <span class="icon">🖥️</span> <span class="text">Server B</span>
-      </a>
-      <a href="#" class="sidenav-link">
-        <span class="icon">🖥️</span> <span class="text">Server C</span>
-      </a>
-      <a href="/logs.html" class="sidenav-link">
-        <span class="icon">📜</span> <span class="text">Logs</span>
-      </a>
-    </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-      <div class="card-grid">
-        <div class="card">
-          <h1>Current CPU Usage</h1>
-          <div class="value" id="cpu-usage">1.9%</div>
-          <div class="refresh-time" id="cpu-refresh-time">Last updated at 8:28:45 PM</div>
-        </div>
-        <div class="card">
-          <h1>Current RAM Usage</h1>
-          <div class="value" id="ram-usage">63.2%</div>
-          <div class="refresh-time" id="ram-refresh-time">Last updated at 8:28:45 PM</div>
-        </div>
-        <div class="card">
-          <h1>Root FS Used</h1>
-          <div class="value" id="root-fs-usage">91.0%</div>
-          <div class="refresh-time" id="root-fs-refresh-time">Last updated at 8:28:45 PM</div>
-        </div>
-        <div class="card">
-          <h1>Server Uptime</h1>
-          <div class="value" id="server-uptime">98.5 hours</div>
-          <div class="refresh-time" id="uptime-refresh-time">Last updated at 8:28:45 PM</div>
-        </div>
+ <!-- Main Layout -->
+<div class="layout-container">
+  <!-- Sidebar -->
+  <div class="sidenav">
+    <h2 class="titles">System Dashboard</h2>
+    <a href="#" class="sidenav-link active">
+      <span class="icon">ℹ️</span> <span class="text">System Information</span>
+    </a>
+    <a href="#" class="sidenav-link">
+      <span class="icon">🖥️</span> <span class="text">Server A</span>
+    </a>
+    <a href="#" class="sidenav-link">
+      <span class="icon">🖥️</span> <span class="text">Server B</span>
+    </a>
+    <a href="#" class="sidenav-link">
+      <span class="icon">🖥️</span> <span class="text">Server C</span>
+    </a>
+    <a href="/logs.html" class="sidenav-link">
+      <span class="icon">📜</span> <span class="text">Logs</span>
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="card-grid">
+      <div class="card">
+        <h1>Current CPU Usage</h1>
+        <div class="value" id="cpu-usage">1.9%</div>
+        <div class="refresh-time" id="cpu-refresh-time">Last updated at 8:28:45 PM</div>
       </div>
-    </div>
-
-    <!-- Summary Section -->
-    <div class="summary-section">
-      <h1>Summary</h1>
-      <div class="value" id="summary">Click the button below to generate a summary.</div>
-      <button id="generate-summary-button">Generate Summary</button>
+      <div class="card">
+        <h1>Current RAM Usage</h1>
+        <div class="value" id="ram-usage">63.2%</div>
+        <div class="refresh-time" id="ram-refresh-time">Last updated at 8:28:45 PM</div>
+      </div>
+      <div class="card">
+        <h1>Root FS Used</h1>
+        <div class="value" id="root-fs-usage">91.0%</div>
+        <div class="refresh-time" id="root-fs-refresh-time">Last updated at 8:28:45 PM</div>
+      </div>
+      <div class="card">
+        <h1>Server Uptime</h1>
+        <div class="value" id="server-uptime">98.5 hours</div>
+        <div class="refresh-time" id="uptime-refresh-time">Last updated at 8:28:45 PM</div>
+      </div>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  
+
+    <!-- Summary Section -->
+  <div class="summary-section">
+      <h1>Summary</h1>
+      <div class="value" id="summary">
+        Click the button below to generate a summary.
+      </div>
+      <!-- GPT Input Section -->
+      <div class="gpt-input-section">
+        <h2>Ask GPT</h2>
+        <textarea
+          id="gpt-input"
+          placeholder="Type your question here and press Enter..."></textarea>
+      </div>
+      <button id="generate-summary-button">Generate Summary</button>
+  </div>
+
+  
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
