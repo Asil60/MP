@@ -1,157 +1,179 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    height: 100vh;
-    background-color: #000000;
-  }
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  color: #e0e0e0;
   
-  /* Side Navigation Bar */
-  .sidenav {
-    width: 250px;
-    background-color: #007bff;
-    color: white;
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    height: 100%;
-  }
-  
-  .sidenav h2 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    font-weight: bold;
-    color: #fff;
-  }
-  
-  .sidenav a {
-    display: block;
-    color: #fff;
-    text-decoration: none;
-    margin: 10px 0;
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease;
-  }
-  
-  .sidenav a.active,
-  .sidenav a:hover {
-    background-color: #0056b3;
-    font-weight: bold;
-  }
-  
-  /* Main Content */
-  .main-content {
-    margin-left: 270px; /* Space for the sidenav */
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-  }
-  
-  /* Card Container for side-by-side layout */
-  .card-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 20px; /* Space between cards */
-    width: 100%;
-    margin-top: 20px;
-    margin-left: 30px;
-  }
-  
-  /* Card Styles */
-  .card {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 300px;
-    padding: 20px;
-    text-align: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  }
-  
-  .card h1 {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  .card .value {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #007bff;
-    margin-bottom: 10px;
-  }
-  
-  .card .refresh-time {
-    font-size: 0.9rem;
-    color: #6c757d;
+}
+
+/* Navbar */
+#navbar-placeholder {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+/* Layout Container */
+.layout-container {
+  display: grid;
+  grid-template-columns: 250px 4fr 1.5fr; /* Sidebar, Main Content, Summary */
+  padding-top: 80px; /* Adjust this value to match the actual height of the navbar */
+  height: 100vh; /* Full height of the viewport */
+  gap: 20px;
+  box-sizing: border-box; /* Ensure padding and border are included in height calculations */
+}
+
+
+/* Sidebar */
+.sidenav {
+  background-color: #1f1f1f;
+  color: #e0e0e0;
+  padding: 20px;
+  height: 100%;
+  width: 200px;
+  transition: width 0.3s ease;
+}
+
+.sidenav h2 {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.sidenav .sidenav-link {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin: 10px 0;
+  text-decoration: none;
+  color: #e0e0e0;
+  border-radius: 5px;
+  background-color: #333333;
+  transition: background-color 0.3s ease;
+}
+
+.sidenav .sidenav-link.active {
+  background-color: #007bff;
+}
+
+.sidenav .sidenav-link:hover {
+  background-color: #444444;
+}
+
+.sidenav .sidenav-link .icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+/* Center Content */
+.main-content {
+  padding: 20px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Flexible card sizes */
+  gap: 15px;
+}
+
+.card {
+  background-color: #1e1e2e;
+  border: 1px solid #333333;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  word-wrap: break-word; /* Prevent text overflow */
+  overflow: hidden; /* Clip overflowing text */
+  font-size: 0.85rem; /* Slightly smaller font size */
+}
+
+.card h1 {
+  font-size: 1rem; /* Header size adjustment */
+}
+
+.card .value {
+  font-size: 1.2rem; /* Highlighted value font size */
+  color: #007bff;
+}
+
+.card .refresh-time {
+  font-size: 0.8rem; /* Smaller font size for timestamps */
+  color: #aaa;
+}
+
+/* Summary Section */
+.summary-section {
+  background-color: #1e1e2e;
+  border: 1px solid #333333;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  margin-right: 20px; /* Add gap from the edge */
+  height: 100%;
+}
+
+.summary-section h1 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.summary-section .value {
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .layout-container {
+    grid-template-columns: 250px 1fr; /* Sidebar and Main Content */
   }
 
-  .card-container1 {
-    width: 80%;
-    position: fixed; /* Sticks the container to a specific location on the screen */
-    bottom: 20px; /* Moves the container 20px from the bottom of the viewport */
-    left: 58%; /* Centers the container horizontally */
-    transform: translateX(-50%); /* Adjusts for perfect centering */
-    padding: 20px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-family: 'Arial', sans-serif;
+  .summary-section {
+    grid-column: 1 / -1; /* Move below */
+    margin-top: 20px;
+    height: auto;
   }
-  
-  .sumcard {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+}
+
+@media (max-width: 768px) {
+  .layout-container {
+    grid-template-columns: 1fr; /* Stack all sections */
   }
-  
-  .sumcard h1 {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 10px;
-  }
-  
-  .sumcard .value {
-    font-size: 0.9rem;
-    color: #555;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 15px;
+
+  .sidenav {
     width: 100%;
-    height: 150px; /* Fixed height for the inner box */
-    overflow-y: auto; /* Enables vertical scrolling */
-    box-sizing: border-box;
-    line-height: 1.6;
-    word-break: break-word;
+    position: static; /* Make it flow with the content */
   }
-  
-  .sumcard button {
-    font-size: 0.9rem;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+
+  .summary-section {
+    margin: 20px 0;
+    font-size: 1rem;
   }
-  
-  .sumcard button:hover {
-    background-color: #0056b3;
+}
+
+@media (max-width: 480px) {
+  .card-grid {
+    grid-template-columns: 1fr; /* Single column layout */
   }
-  
+
+  .summary-section {
+    margin: 10px 0;
+  }
+}
