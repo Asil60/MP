@@ -3,39 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modern Landing Page</title>
+  <title>Lumiere Proxy</title>
   <link rel="stylesheet" href="homestyle.css">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="login.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/amazon-cognito-identity-js@6.0.0/dist/amazon-cognito-identity.min.js"></script>
 </head>
 <body>
-  <!-- Placeholder for Navbar -->
-  <div id="navbar-placeholder"></div>
+  <!-- Navbar -->
+  <header>
+    <div class="logo">
+      <img src="./images/white_lp.png" alt="Logo" />
+    </div>
+    <nav>
+      <ul>
+        <li><a href="#" class="active">Home</a></li>
+        <li><a href="#" id="sign-in">Sign In</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
   <main>
     <div class="hero-section">
       <div class="content">
         <h1>LUMIERE PROXY</h1>
-        <p>Detect - Protect - Secure </p>
-        <a href="signin.html" class="cta-button">Get Started</a>
+        <p>Detect - Protect - Secure</p>
+        <a href="#" class="cta-button" id="form-open">Get Started</a>
       </div>
     </div>
   </main>
 
+  <!-- Login Form -->
+  <section class="home">
+    <div class="form_container">
+      <i class="uil uil-times form_close"></i>
+      <div class="form login_form">
+        <form id="login-form" novalidate>
+          <h2>Login</h2>
+
+          <!-- Email Input -->
+          <div class="input_box">
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="Enter your email" 
+              required 
+              title="Please enter a valid email address."
+            />
+            <i class="uil uil-envelope-alt email"></i>
+          </div>
+
+          <!-- Password Input -->
+          <div class="input_box">
+            <input 
+              type="password" 
+              id="password" 
+              placeholder="Enter your password" 
+              required 
+              title="Please enter your password."
+            />
+            <i class="uil uil-lock password"></i>
+            <i class="uil uil-eye-slash pw_hide"></i>
+          </div>
+
+          <!-- MFA Input (Hidden Initially) -->
+          <div class="input_box mfa-section" style="display: none;">
+            <input 
+              type="text" 
+              id="mfa" 
+              placeholder="Enter MFA Code" 
+              required 
+              pattern="\d{6}" 
+              maxlength="6" 
+              title="MFA code must be exactly 6 digits."
+            />
+            <i class="uil uil-shield-check"></i>
+          </div>
+
+          <!-- Login Button -->
+          <button class="button" id="login-button" onclick="submitForm()">Login Now</button>
+        </form>
+      </div>
+    </div>
+  </section>
 
 
-
-  <script>
-    // Dynamically load the navbar
-    fetch('navbar.html')
-      .then(response => {
-        if (!response.ok) throw new Error(`Failed to load navbar: ${response.statusText}`);
-        return response.text();
-      })
-      .then(data => {
-        document.getElementById('navbar-placeholder').innerHTML = data;
-      })
-      .catch(error => console.error(error));
-
-      
-  </script>
-  
 </body>
 </html>
