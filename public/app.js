@@ -82,6 +82,76 @@ async function fetchServerUptime() {
     document.getElementById("uptime-refresh-time").textContent = "";
   }
 }
+// Fetch Total Requests & Errors Over Time and render the chart
+async function fetchRequestsErrorsChart() {
+  try {
+    const response = await fetch("/requests-errors");
+    const { data } = await response.json();
+
+    if (!data || data.length === 0) {
+      throw new Error("No data available for Total Requests & Errors Over Time.");
+    }
+
+    // Extract timestamps and values from the first dataset (assuming one instance)
+    const timestamps = data[0].timestamps; // Time labels from API
+    const values = data[0].values; // Request counts or errors from API
+
+    // Get the chart container
+    const ctx = document.getElementById("requestsErrorsChart").getContext("2d");
+
+    // Render the chart
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: timestamps, // Time labels
+        datasets: [
+          {
+            label: "Total Requests & Errors",
+            data: values, // Data points
+            borderColor: "rgba(75, 192, 192, 1)",
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            fill: true, // Fill area under the curve
+            tension: 0.2, // Smooth curves
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "top",
+          },
+          title: {
+            display: true,
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Time",
+            },
+            ticks: {
+              maxRotation: 90, // Rotate labels if necessary
+              minRotation: 45,
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Requests/Errors",
+            },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching Total Requests & Errors Over Time data:", error);
+  }
+}
+
+
 
 // Function to fetch Summary using OpenAI
 async function fetchSummary() {
@@ -136,6 +206,7 @@ setInterval(() => {
   fetchRAMUsage();
   fetchRootFSUsage();
   fetchServerUptime();
+  fetchRequestsErrorsChart();
 }, 10000);
 
 // Initial calls to display data immediately when the page loads
@@ -143,3 +214,4 @@ fetchCPUUsage();
 fetchRAMUsage();
 fetchRootFSUsage();
 fetchServerUptime();
+fetchRequestsErrorsChart();

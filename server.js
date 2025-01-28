@@ -7,6 +7,7 @@ const PORT = 3000;
 
 // Grafana API configuration
 const GRAFANA_API_URL = "http://18.136.43.13:3000/api/datasources/proxy/1/api/v1/query";
+const GRAFANA_API_URL_RANGE = "http://18.136.43.13:3000/api/datasources/proxy/1/api/v1/query_range";
 const API_KEY = "glsa_6AvxaOVDiUgTCde5nqYnf3TBlVwE1lJt_0b9647e9"; // Replace with your Grafana API key
 
 // OpenAI API configuration
@@ -117,6 +118,60 @@ app.get("/server-uptime", async (req, res) => {
     res.status(500).send("Failed to fetch Server Uptime data.");
   }
 });
+
+app.get("/requests-errors", async (req, res) => {
+  try {
+    const query = 'rate(nginx_http_requests_total[5m])'; // Query for rate
+    const endTime = Math.floor(Date.now() / 1000); // Current time in seconds
+    const startTime = endTime - 3600; // Start time (1 hour ago)
+    const step = 60; // 1-minute intervals
+
+    // Make API call with time range parameters
+    const response = await axios.get(GRAFANA_API_URL_RANGE, {
+      params: {
+        query,
+        start: startTime,
+        end: endTime,
+        step,
+      },
+      headers: {
+        Authorization: `Bearer ${API_KEY}`, // Replace with your API key
+      },
+    });
+
+    const resultData = response.data?.data?.result;
+
+    if (!resultData || resultData.length === 0) {
+      console.warn("No data returned from API.");
+      return res.json({ data: [] });
+    }
+
+    // Process time-series data
+    const formattedData = resultData.map((item) => {
+      if (item.values && Array.isArray(item.values)) {
+        return {
+          timestamps: item.values.map((value) =>
+            new Date(value[0] * 1000).toLocaleTimeString() // Only include the time
+          ),
+          values: item.values.map((value) => parseFloat(value[1])), // Extract metric values
+        };
+      }
+
+      console.warn("Unexpected data format for item:", item);
+      return null;
+    }).filter(Boolean); // Remove null entries
+
+    res.json({ data: formattedData });
+  } catch (error) {
+    console.error("Error fetching data:", error.message);
+    res.status(500).send(`Failed to fetch data: ${error.message}`);
+  }
+});
+
+
+
+
+
 
 // OpenAI summary endpoint
 app.post("/summarize", async (req, res) => {

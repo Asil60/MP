@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lumiere Proxy Dashboard</title>
   <link rel="stylesheet" href="./style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="askgpt.js"></script>
 </head>
 <body>
@@ -55,6 +56,13 @@
         <div class="refresh-time" id="uptime-refresh-time">Last updated at 8:28:45 PM</div>
       </div>
     </div>
+    <div class="card-container2">
+      <div class="card">
+        <h1>Total Requests & Errors Over Time</h1>
+        <canvas id="requestsErrorsChart"></canvas>
+      </div>
+    </div>
+    
   </div>
 
   <!-- Summary Section -->
