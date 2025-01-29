@@ -82,9 +82,11 @@ async function fetchServerUptime() {
     document.getElementById("uptime-refresh-time").textContent = "";
   }
 }
-// Fetch Total Requests & Errors Over Time and render the chart
-async function fetchRequestsErrorsChart() {
+let requestsErrorsChart;
+
+async function fetchAndUpdateChart() {
   try {
+    // Fetch new data from the API
     const response = await fetch("/requests-errors");
     const { data } = await response.json();
 
@@ -92,64 +94,83 @@ async function fetchRequestsErrorsChart() {
       throw new Error("No data available for Total Requests & Errors Over Time.");
     }
 
-    // Extract timestamps and values from the first dataset (assuming one instance)
-    const timestamps = data[0].timestamps; // Time labels from API
-    const values = data[0].values; // Request counts or errors from API
+    const timestamps = data[0]?.timestamps || []; // Time labels
+    const values = data[0]?.values || []; // Data points
 
-    // Get the chart container
-    const ctx = document.getElementById("requestsErrorsChart").getContext("2d");
+    if (!timestamps.length || !values.length) {
+      throw new Error("Invalid data structure: Missing timestamps or values.");
+    }
 
-    // Render the chart
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: timestamps, // Time labels
-        datasets: [
-          {
-            label: "Total Requests & Errors",
-            data: values, // Data points
-            borderColor: "rgba(75, 192, 192, 1)",
-            backgroundColor: "rgba(75, 192, 192, 0.2)",
-            fill: true, // Fill area under the curve
-            tension: 0.2, // Smooth curves
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: "top",
-          },
-          title: {
-            display: true,
-          },
+    // Update the chart
+    if (requestsErrorsChart) {
+      // Update the existing chart with new data
+      requestsErrorsChart.data.labels = timestamps; // Update timestamps
+      requestsErrorsChart.data.datasets[0].data = values; // Update values
+      requestsErrorsChart.update(); // Refresh the chart
+    } else {
+      // Create the chart if it doesn't exist
+      const ctx = document.getElementById("requestsErrorsChart").getContext("2d");
+      requestsErrorsChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: timestamps, // Time labels
+          datasets: [
+            {
+              label: "Total Requests & Errors",
+              data: values, // Data points
+              borderColor: "rgba(75, 192, 192, 1)",
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              fill: true, // Fill area under the curve
+              tension: 0.2, // Smooth curves
+            },
+          ],
         },
-        scales: {
-          x: {
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "top",
+            },
             title: {
               display: true,
-              text: "Time",
-            },
-            ticks: {
-              maxRotation: 90, // Rotate labels if necessary
-              minRotation: 45,
+              text: "Total Requests & Errors Over Time",
             },
           },
-          y: {
-            title: {
-              display: true,
-              text: "Requests/Errors",
+          scales: {
+            x: {
+              type: "category",
+              title: {
+                display: true,
+                text: "Time",
+              },
+              ticks: {
+                autoSkip: true, // Automatically skip labels to avoid clutter
+                maxTicksLimit: 10, // Limit the number of labels displayed
+                maxRotation: 0, // Prevent rotation for better readability
+                minRotation: 0,
+              },
             },
-            beginAtZero: true,
+            y: {
+              title: {
+                display: true,
+                text: "Requests/Errors",
+              },
+              beginAtZero: true,
+            },
           },
         },
-      },
-    });
+      });
+    }
   } catch (error) {
-    console.error("Error fetching Total Requests & Errors Over Time data:", error);
+    console.error("Error updating the chart:", error);
   }
 }
+
+// Fetch data and update the chart every minute
+document.addEventListener("DOMContentLoaded", () => {
+  fetchAndUpdateChart(); // Initial fetch
+  setInterval(fetchAndUpdateChart, 60000); // Update every 1 minute
+});
 
 
 
@@ -206,7 +227,6 @@ setInterval(() => {
   fetchRAMUsage();
   fetchRootFSUsage();
   fetchServerUptime();
-  fetchRequestsErrorsChart();
 }, 10000);
 
 // Initial calls to display data immediately when the page loads
@@ -214,4 +234,3 @@ fetchCPUUsage();
 fetchRAMUsage();
 fetchRootFSUsage();
 fetchServerUptime();
-fetchRequestsErrorsChart();
