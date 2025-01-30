@@ -1,7 +1,3 @@
-login.js
-
-
-
 // Utility functions for validation
 function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,7 +28,7 @@ async function submitForm(email, password, mfaCode, session) {
     const result = await response.json();
     console.log("Response:", result);
 
-    // Ensure only one message is shown based on the exact response
+    // Handle successful login
     if (response.ok && result.statusCode === 200) {
       const parsedBody = JSON.parse(result.body);
       console.log("Tokens received:", parsedBody);
@@ -47,9 +43,11 @@ async function submitForm(email, password, mfaCode, session) {
         icon: "success",
         confirmButtonText: "Let's go!",
       }).then(() => {
-        window.location.href = "anotherPage.html";
+        window.location.href = "panel.html";
       });
-    } else if (response.ok && result.statusCode === 202) {
+    } 
+    // Handle MFA required
+    else if (response.ok && result.statusCode === 202) {
       const session = result.session;
       console.log("MFA required. Session token:", session);
 
@@ -63,13 +61,18 @@ async function submitForm(email, password, mfaCode, session) {
       document.querySelector(".mfa-section").style.display = "block";
       document.querySelector("#login-button").textContent = "Verify MFA";
       document.querySelector("#login-button").setAttribute("data-session", session);
-    } else {
-      // Handle specific MFA errors
-      if (result.message && result.message.toLowerCase().includes("mfa")) {
-        displayError("Invalid MFA code. Please check and try again.");
+    } 
+    // Handle errors
+    else {
+      if (result.statusCode === 403 || (result.message && result.message.toLowerCase().includes("invalid mfa code"))) {
+        // Invalid MFA code
+        displayError("Invalid MFA code. Please try again.");
+      } else if (result.statusCode === 401 || (result.message && result.message.toLowerCase().includes("invalid email or password"))) {
+        // Invalid email or password
+        displayError("Invalid email or password. Please check and try again.");
       } else {
-        // Display general error if no MFA-related issue
-        displayError(result.message || "Invalid credentials. Please try again.");
+        // Generic error message
+        displayError(result.message || "Something went wrong. Please try again.");
       }
     }
   } catch (error) {

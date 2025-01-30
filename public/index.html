@@ -3,95 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lumiere Proxy Dashboard</title>
-  <link rel="stylesheet" href="./style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="./askgpt.js"></script>
-  <script src="./ec2.js"></script>
+  <title>Lumiere Proxy</title>
+  <link rel="stylesheet" href="indexstyle.css">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="login.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/amazon-cognito-identity-js@6.0.0/dist/amazon-cognito-identity.min.js"></script>
 </head>
 <body>
-
- <!-- Main Layout -->
-<div class="layout-container">
-  <!-- Sidebar -->
-  <div class="sidenav">
-    <h2 class="titles">System Dashboard</h2>
-    <a href="#" class="sidenav-link active">
-      <span class="icon">ℹ️</span> <span class="text">System Information</span>
-    </a>
-    <a href="#" class="sidenav-link">
-      <span class="icon">🖥️</span> <span class="text">Server A</span>
-    </a>
-    <a href="#" class="sidenav-link">
-      <span class="icon">🖥️</span> <span class="text">Server B</span>
-    </a>
-    <a href="#" class="sidenav-link">
-      <span class="icon">🖥️</span> <span class="text">Server C</span>
-    </a>
-    <a href="/logs.html" class="sidenav-link">
-      <span class="icon">📜</span> <span class="text">Logs</span>
-    </a>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="card-grid">
-      <div class="card-container3">
-        <div class="card">
-            <h1>EC2 Instance Control</h1>
-            <button class="btn btn-start" id="ec2-start-btn">Start Instance</button>
-            <button class="btn btn-stop" id="ec2-stop-btn">Stop Instance</button>
-            <p id="ec2-status"></p>
-        </div>
+  <!-- Navbar -->
+  <header>
+    <div class="logo">
+      <img src="images/white_lp.png" alt="Logo" />
     </div>
-    
-      <div class="card">
-        <h1>Current CPU Usage</h1>
-        <div class="value" id="cpu-usage">1.9%</div>
-        <div class="refresh-time" id="cpu-refresh-time">Last updated at 8:28:45 PM</div>
-      </div>
-      <div class="card">
-        <h1>Current RAM Usage</h1>
-        <div class="value" id="ram-usage">63.2%</div>
-        <div class="refresh-time" id="ram-refresh-time">Last updated at 8:28:45 PM</div>
-      </div>
-      <div class="card">
-        <h1>Root FS Used</h1>
-        <div class="value" id="root-fs-usage">91.0%</div>
-        <div class="refresh-time" id="root-fs-refresh-time">Last updated at 8:28:45 PM</div>
-      </div>
-      <div class="card">
-        <h1>Server Uptime</h1>
-        <div class="value" id="server-uptime">98.5 hours</div>
-        <div class="refresh-time" id="uptime-refresh-time">Last updated at 8:28:45 PM</div>
+    <nav>
+      <ul>
+        <li><a href="#" class="active">Home</a></li>
+        <li><a href="#" id="sign-in">Sign In</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <div class="hero-section">
+      <div class="content">
+        <h1>LUMIERE PROXY</h1>
+        <p>Detect - Protect - Secure</p>
+        <a href="#" class="cta-button" id="form-open">Get Started</a>
       </div>
     </div>
-    <div class="card-container2">
-      <div class="card">
-        <h1>Total Requests & Errors Over Time</h1>
-        <canvas id="requestsErrorsChart"></canvas>
+  </main>
+
+  <!-- Login Form -->
+  <section class="home">
+    <div class="form_container">
+      <i class="uil uil-times form_close"></i>
+      <div class="form login_form">
+        <form id="login-form" novalidate>
+          <h2>Login</h2>
+
+          <!-- Email Input -->
+          <div class="input_box">
+            <input 
+              type="email" 
+              id="email" 
+              placeholder="Enter your email" 
+              required 
+              title="Please enter a valid email address."
+            />
+            <i class="uil uil-envelope-alt email"></i>
+          </div>
+
+          <!-- Password Input -->
+          <div class="input_box">
+            <input 
+              type="password" 
+              id="password" 
+              placeholder="Enter your password" 
+              required 
+              title="Please enter your password."
+            />
+            <i class="uil uil-lock password"></i>
+            <i class="uil uil-eye-slash pw_hide"></i>
+          </div>
+
+          <!-- MFA Input (Hidden Initially) -->
+          <div class="input_box mfa-section" style="display: none;">
+            <input 
+              type="text" 
+              id="mfa" 
+              placeholder="Enter MFA Code" 
+              required 
+              pattern="\d{6}" 
+              maxlength="6" 
+              title="MFA code must be exactly 6 digits."
+            />
+            <i class="uil uil-shield-check"></i>
+          </div>
+
+          <!-- Login Button -->
+          <button class="button" id="login-button">Login Now</button>
+        </form>
       </div>
     </div>
-    
-  </div>
+  </section>
 
-  <!-- Summary Section -->
-  <div class="summary-section">
-      <h1>Summary</h1>
-      <div class="value" id="summary">
-        Click the button below to generate a summary.
-      </div>
-      <!-- GPT Input Section -->
-      <div class="gpt-input-section">
-        <h2>Ask GPT</h2>
-        <textarea
-          id="gpt-input"
-          placeholder="Type your question here and press Enter..."></textarea>
-      </div>
-      <button id="generate-summary-button">Generate Summary</button>
-  </div>
-</div>
 
-<script src="app.js"></script>
 </body>
 </html>
