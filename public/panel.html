@@ -44,7 +44,7 @@
                 <span class="toggle-text"></span>
               </span>
             </label>
-            <p id="ec2-status"></p>
+            <p id="ec2-status">Instance Status: Stopped</p>
         </div>
     </div>
     
@@ -97,4 +97,113 @@
 <script src="app.js"></script>
 <script src="./askgpt.js"></script>
 </body>
+<script>
+ const API_URL = "https://07op85wb39.execute-api.ap-southeast-1.amazonaws.com/prod/ec2";
+
+async function fetchEC2Status() {
+    const action = "status"; // The action to perform
+    const instanceIds = "i-062ae4e7dfac33f4d"; // Replace with your instance ID
+
+    // Construct the full API URL with query parameters
+    const fullUrl = `${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)}`;
+
+    try {
+        console.log(`Sending API Request to: ${fullUrl}`);
+
+        // Make the GET request
+        const response = await fetch(fullUrl, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        // Check if the response is successful
+        if (!response.ok) {
+            console.error(`API Request failed with status: ${response.status} ${response.statusText}`);
+            return;
+        }
+
+        // Parse and log the JSON response
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        // Update the UI based on the instance status
+        const instanceStatus = data.instances && data.instances[instanceIds];
+        const toggleSwitch = document.getElementById("ec2-toggle");
+        const statusText = document.getElementById("ec2-status");
+
+        if (instanceStatus === "running") {
+            toggleSwitch.checked = true;
+            toggleSwitch.classList.add("green");
+            toggleSwitch.classList.remove("red");
+            statusText.innerText = "Instance Status: Running";
+        } else {
+            toggleSwitch.checked = false;
+            toggleSwitch.classList.add("red");
+            toggleSwitch.classList.remove("green");
+            statusText.innerText = "Instance Status: Stopped";
+        }
+    } catch (error) {
+        console.error("Error during API call:", error);
+        document.getElementById("ec2-status").innerText = "Instance Status: Error fetching status";
+    }
+}
+
+// Function to toggle EC2 state (start/stop)
+async function toggleEC2State() {
+    const toggleSwitch = document.getElementById("ec2-toggle");
+    const instanceIds = "i-062ae4e7dfac33f4d"; // Replace with your instance ID
+    const action = toggleSwitch.checked ? "start" : "stop"; // Determine action based on toggle state
+
+    const fullUrl = `${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)}`;
+
+    try {
+        console.log(`Sending API Request to: ${fullUrl}`);
+
+        // Make the GET request
+        const response = await fetch(fullUrl, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            console.error(`API Request failed with status: ${response.status} ${response.statusText}`);
+            toggleSwitch.checked = !toggleSwitch.checked; // Revert toggle state on failure
+            return;
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        // Update the UI based on the action
+        const statusText = document.getElementById("ec2-status");
+
+        if (action === "start") {
+            toggleSwitch.classList.add("green");
+            toggleSwitch.classList.remove("red");
+            statusText.innerText = "Instance Status: Running";
+        } else {
+            toggleSwitch.classList.add("red");
+            toggleSwitch.classList.remove("green");
+            statusText.innerText = "Instance Status: Stopped";
+        }
+    } catch (error) {
+        console.error("Error during API call:", error);
+        toggleSwitch.checked = !toggleSwitch.checked; // Revert toggle state on failure
+    }
+}
+
+// Attach the toggle switch handler
+document.getElementById("ec2-toggle").addEventListener("change", toggleEC2State);
+
+// Fetch the status on page load
+document.addEventListener("DOMContentLoaded", () => {
+    fetchEC2Status();
+});
+
+</script>
+
 </html>

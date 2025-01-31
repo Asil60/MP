@@ -256,7 +256,10 @@ app.post("/ask-gpt", async (req, res) => {
   try {
     const { question, data } = req.body;
 
-    // Format request-error data for GPT
+    // Log received data for debugging
+    console.log("Received Data for GPT:", data);
+
+    // Format request-error data
     let requestErrorsSummary = "No request-error data available.";
     if (data.requestsErrors?.timestamps?.length > 0) {
       const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
@@ -273,7 +276,10 @@ app.post("/ask-gpt", async (req, res) => {
       `;
     }
 
-    // GPT prompt with the summarized data
+    // Log formatted summary for debugging
+    console.log("Request-Errors Summary for GPT:", requestErrorsSummary);
+
+    // Construct GPT prompt
     const prompt = `
     Based on the following system data:
     - CPU Usage: ${data.cpuUsage}
@@ -302,7 +308,6 @@ app.post("/ask-gpt", async (req, res) => {
     res.status(500).json({ error: "Failed to process query." });
   }
 });
-
 
 
 // Default route

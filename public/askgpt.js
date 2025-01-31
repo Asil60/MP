@@ -12,31 +12,45 @@ document.addEventListener("DOMContentLoaded", function () {
       summaryDiv.innerHTML = `<p>Processing your query...</p>`;
 
       try {
-        // Fetch system data
+        // Fetch system metrics
         const cpuUsage = document.getElementById("cpu-usage")?.textContent || "Unavailable";
         const ramUsage = document.getElementById("ram-usage")?.textContent || "Unavailable";
         const rootFSUsage = document.getElementById("root-fs-usage")?.textContent || "Unavailable";
         const serverUptime = document.getElementById("server-uptime")?.textContent || "Unavailable";
 
-        // Fetch request-error data
+        // Fetch request-error data from the server
         const response = await fetch("/requests-errors");
         const requestErrorData = await response.json();
-        let requestErrors = { timestamps: [], values: [] };
 
+        // Validate and extract request-error data
+        let requestErrors = { timestamps: [], values: [] };
         if (requestErrorData.data && requestErrorData.data.length > 0) {
-          requestErrors = requestErrorData.data[0]; // Extract first dataset
+          requestErrors = requestErrorData.data[0]; // Use the first dataset
+        } else {
+          console.warn("No request-error data available.");
         }
 
-        // Send query and system data to GPT endpoint
+        // Log the fetched and formatted request-error data for debugging
+        console.log("Fetched Request-Error Data:", requestErrorData);
+        console.log("Formatted Request-Errors for GPT:", requestErrors);
+
+        // Send query and all system data to the GPT endpoint
         const gptResponse = await fetch("/ask-gpt", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             question: query,
-            data: { cpuUsage, ramUsage, rootFSUsage, serverUptime, requestErrors },
+            data: {
+              cpuUsage,
+              ramUsage,
+              rootFSUsage,
+              serverUptime,
+              requestsErrors: requestErrors,
+            },
           }),
         });
 
+        // Process GPT's response
         const result = await gptResponse.json();
         if (!result.answer) throw new Error("No response from GPT.");
 
@@ -47,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
         summaryDiv.innerHTML = `<p style='color: red;'>Error processing query. Please try again.</p>`;
       }
 
-      // Clear input and reset height
+      // Clear the input and reset its height
       event.target.value = "";
       event.target.style.height = "auto";
     }
