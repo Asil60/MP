@@ -118,8 +118,8 @@ async function fetchAndUpdateChart() {
             {
               label: "Total Requests & Errors",
               data: values, // Data points
-              borderColor: "rgba(75, 192, 192, 1)",
-              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgb(135, 27, 230)",
+              backgroundColor: "rgba(160, 37, 217, 0)",
               fill: true, // Fill area under the curve
               tension: 0.2, // Smooth curves
             },
