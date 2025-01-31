@@ -188,8 +188,18 @@ async function fetchSummary() {
       serverUptime: document.getElementById("server-uptime").textContent,
     };
 
+    // Fetch request-error data
+    const response = await fetch("/requests-errors");
+    const requestErrorData = await response.json();
+
+    if (requestErrorData.data && requestErrorData.data.length > 0) {
+      data.requestsErrors = requestErrorData.data[0]; // Extract first dataset
+    } else {
+      data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
+    }
+
     // Send data to the backend for summarization
-    const response = await fetch("/summarize", {
+    const summaryResponse = await fetch("/summarize", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -197,10 +207,10 @@ async function fetchSummary() {
       body: JSON.stringify({ data }),
     });
 
-    const result = await response.json();
+    const result = await summaryResponse.json();
     if (!result.summary) throw new Error("No summary returned.");
 
-    // Split the summary into sentences based on periods and format it into a single ordered list
+    // Format the summary into an ordered list
     const formattedSummary = result.summary
       .split(/\d\.\s+/) // Split on "1. ", "2. ", etc.
       .filter((item) => item.trim() !== "") // Remove empty items
@@ -216,9 +226,8 @@ async function fetchSummary() {
 }
 
 // Add event listener to the button
-document
-  .getElementById("generate-summary-button")
-  .addEventListener("click", fetchSummary);
+document.getElementById("generate-summary-button").addEventListener("click", fetchSummary);
+
 
 
 // Update all data every 10 seconds
