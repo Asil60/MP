@@ -1,12 +1,19 @@
+// Global flag to track dropdown interaction
+let isDropdownActive = false;
+let requestsErrorsChart;
+
 // Function to fetch CPU usage
 async function fetchCPUUsage() {
   try {
+    if (isDropdownActive) return; // Skip updates if dropdown is active
+
     const response = await fetch("/cpu-usage");
     const data = await response.json();
     if (!data || data.length === 0) throw new Error("No CPU data available.");
 
+    // Extract the raw value and display it with three decimal points without rounding
     let rawValue = parseFloat(data[0].value[1]);
-    document.getElementById("cpu-usage").textContent = `${rawValue.toFixed(1)}%`;
+    document.getElementById("cpu-usage").textContent = `${rawValue.toFixed(3)}`;
 
     const now = new Date();
     document.getElementById(
@@ -22,6 +29,8 @@ async function fetchCPUUsage() {
 // Function to fetch RAM usage
 async function fetchRAMUsage() {
   try {
+    if (isDropdownActive) return; // Skip updates if dropdown is active
+
     const response = await fetch("/ram-usage");
     const data = await response.json();
     if (!data || data.length === 0) throw new Error("No RAM data available.");
@@ -43,6 +52,8 @@ async function fetchRAMUsage() {
 // Function to fetch Root FS usage
 async function fetchRootFSUsage() {
   try {
+    if (isDropdownActive) return; // Skip updates if dropdown is active
+
     const response = await fetch("/root-fs-usage");
     const data = await response.json();
     if (!data || data.length === 0) throw new Error("No Root FS data available.");
@@ -64,6 +75,8 @@ async function fetchRootFSUsage() {
 // Function to fetch Server Uptime
 async function fetchServerUptime() {
   try {
+    if (isDropdownActive) return; // Skip updates if dropdown is active
+
     const response = await fetch("/server-uptime");
     const data = await response.json();
     if (!data || data.length === 0) throw new Error("No Server Uptime data available.");
@@ -82,11 +95,12 @@ async function fetchServerUptime() {
     document.getElementById("uptime-refresh-time").textContent = "";
   }
 }
-let requestsErrorsChart;
 
+// Function to fetch and update the chart
 async function fetchAndUpdateChart() {
   try {
-    // Fetch new data from the API
+    if (isDropdownActive) return; // Skip updates if dropdown is active
+
     const response = await fetch("/requests-errors");
     const { data } = await response.json();
 
@@ -101,62 +115,36 @@ async function fetchAndUpdateChart() {
       throw new Error("Invalid data structure: Missing timestamps or values.");
     }
 
-    // Update the chart
     if (requestsErrorsChart) {
-      // Update the existing chart with new data
-      requestsErrorsChart.data.labels = timestamps; // Update timestamps
-      requestsErrorsChart.data.datasets[0].data = values; // Update values
-      requestsErrorsChart.update(); // Refresh the chart
+      requestsErrorsChart.data.labels = timestamps;
+      requestsErrorsChart.data.datasets[0].data = values;
+      requestsErrorsChart.update();
     } else {
-      // Create the chart if it doesn't exist
       const ctx = document.getElementById("requestsErrorsChart").getContext("2d");
       requestsErrorsChart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: timestamps, // Time labels
+          labels: timestamps,
           datasets: [
             {
               label: "Total Requests & Errors",
-              data: values, // Data points
+              data: values,
               borderColor: "rgb(135, 27, 230)",
               backgroundColor: "rgba(160, 37, 217, 0)",
-              fill: true, // Fill area under the curve
-              tension: 0.2, // Smooth curves
+              fill: true,
+              tension: 0.2,
             },
           ],
         },
         options: {
           responsive: true,
           plugins: {
-            legend: {
-              position: "top",
-            },
-            title: {
-              display: true,
-              text: "Total Requests & Errors Over Time",
-            },
+            legend: { position: "top" },
+            title: { display: true, text: "Total Requests & Errors Over Time" },
           },
           scales: {
-            x: {
-              type: "category",
-              title: {
-                display: true,
-                text: "Time",
-              },
-              ticks: {
-                autoSkip: true, // Automatically skip labels to avoid clutter
-                maxTicksLimit: 10, // Limit the number of labels displayed
-                maxRotation: 0, // Prevent rotation for better readability
-                minRotation: 0,
-              },
-            },
-            y: {
-              title: {
-                display: true,
-                text: "Requests/Errors",
-              },
-              beginAtZero: true,
-            },
+            x: { type: "category", ticks: { autoSkip: true, maxTicksLimit: 10 } },
+            y: { beginAtZero: true },
           },
         },
       });
@@ -166,21 +154,11 @@ async function fetchAndUpdateChart() {
   }
 }
 
-// Fetch data and update the chart every minute
-document.addEventListener("DOMContentLoaded", () => {
-  fetchAndUpdateChart(); // Initial fetch
-  setInterval(fetchAndUpdateChart, 60000); // Update every 1 minute
-});
-
-
-
 // Function to fetch Summary using OpenAI
 async function fetchSummary() {
   try {
-    // Display loading text
     document.getElementById("summary").innerHTML = "<p>Generating summary...</p>";
 
-    // Prepare the data to be summarized
     const data = {
       cpuUsage: document.getElementById("cpu-usage").textContent,
       ramUsage: document.getElementById("ram-usage").textContent,
@@ -188,34 +166,29 @@ async function fetchSummary() {
       serverUptime: document.getElementById("server-uptime").textContent,
     };
 
-    // Fetch request-error data
     const response = await fetch("/requests-errors");
     const requestErrorData = await response.json();
 
     if (requestErrorData.data && requestErrorData.data.length > 0) {
-      data.requestsErrors = requestErrorData.data[0]; // Extract first dataset
+      data.requestsErrors = requestErrorData.data[0];
     } else {
-      data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
+      data.requestsErrors = { timestamps: [], values: [] };
     }
 
-    // Send data to the backend for summarization
     const summaryResponse = await fetch("/summarize", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data }),
     });
 
     const result = await summaryResponse.json();
     if (!result.summary) throw new Error("No summary returned.");
 
-    // Format the summary into an ordered list
     const formattedSummary = result.summary
-      .split(/\d\.\s+/) // Split on "1. ", "2. ", etc.
-      .filter((item) => item.trim() !== "") // Remove empty items
-      .map((item) => `<li>${item.trim()}</li>`) // Wrap each sentence in <li>
-      .join(""); // Join all list items into a single string
+      .split(/\d\.\s+/)
+      .filter((item) => item.trim() !== "")
+      .map((item) => `<li>${item.trim()}</li>`)
+      .join("");
 
     document.getElementById("summary").innerHTML = `<ol>${formattedSummary}</ol>`;
   } catch (error) {
@@ -225,10 +198,48 @@ async function fetchSummary() {
   }
 }
 
-// Add event listener to the button
-document.getElementById("generate-summary-button").addEventListener("click", fetchSummary);
+// Fetch data for the selected range
+async function fetchCPUUsageForRange(start) {
+  try {
+    isDropdownActive = true; // Disable automatic updates when dropdown is active
 
+    const response = await fetch(`/cpu-usage-range?start=${start}`);
+    const result = await response.json();
 
+    if (!result.success) {
+      throw new Error(result.error || "Failed to fetch average CPU usage.");
+    }
+
+    const average = result.average;
+    document.getElementById("cpu-usage").textContent = `${average}%`;
+
+    const now = new Date();
+    document.getElementById(
+      "cpu-refresh-time"
+    ).textContent = `Data fetched for range starting at: ${new Date(
+      start * 1000
+    ).toLocaleString()}`;
+  } catch (error) {
+    console.error("Error fetching average CPU usage:", error);
+    document.getElementById("cpu-usage").textContent = "Error fetching data for selected range.";
+    document.getElementById("cpu-refresh-time").textContent = "";
+  }
+}
+
+// Add event listener for dropdown change
+document.getElementById("timeframe").addEventListener("change", function () {
+  isDropdownActive = true; // Disable automatic updates
+  const timeframe = Number(this.value);
+  const now = Math.floor(Date.now() / 1000);
+  const start = now - timeframe;
+
+  fetchCPUUsageForRange(start);
+});
+
+// Re-enable automatic updates after 10 minutes
+setTimeout(() => {
+  isDropdownActive = false;
+}, 10 * 60 * 1000);
 
 // Update all data every 10 seconds
 setInterval(() => {
@@ -236,6 +247,7 @@ setInterval(() => {
   fetchRAMUsage();
   fetchRootFSUsage();
   fetchServerUptime();
+  fetchAndUpdateChart();
 }, 10000);
 
 // Initial calls to display data immediately when the page loads
@@ -243,3 +255,4 @@ fetchCPUUsage();
 fetchRAMUsage();
 fetchRootFSUsage();
 fetchServerUptime();
+fetchAndUpdateChart();

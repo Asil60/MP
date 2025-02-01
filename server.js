@@ -309,6 +309,49 @@ app.post("/ask-gpt", async (req, res) => {
   }
 });
 
+app.get("/cpu-usage-range", async (req, res) => {
+  const { start } = req.query;
+
+  if (!start) {
+    return res.status(400).json({ success: false, error: "Start timestamp is required." });
+  }
+
+  try {
+    const end = Math.floor(Date.now() / 1000); // Current time in Unix seconds
+
+    // Dynamically set the step size based on the time range
+    const range = end - start;
+    let step = 10; // Default step size (in seconds)
+
+    if (range > 2 * 24 * 3600) step = 3600; // Step size = 1 hour for ranges > 2 days
+    if (range > 7 * 24 * 3600) step = 6 * 3600; // Step size = 6 hours for ranges > 7 days
+
+    const query =
+      '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="localhost:9100"}[1m])))';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGE, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+
+    if (!result || result.length === 0 || !result[0].values) {
+      return res.status(404).json({ success: false, error: "No data available for the range." });
+    }
+
+    const values = result[0].values;
+
+    const average =
+      values.reduce((sum, [, value]) => sum + parseFloat(value), 0) / values.length;
+
+    res.json({ success: true, average: average.toFixed(2) });
+  } catch (error) {
+    console.error("Error fetching CPU usage data for range:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch CPU usage data for range." });
+  }
+});
+
 
 // Default route
 app.get("/", (req, res) => {
