@@ -20,20 +20,18 @@ async function fetchFamilyName() {
   const familyNameElement = document.querySelector("#family-name-display");
  
   if (!familyNameElement) {
-    console.error("❌ Element with ID 'family-name-display' not found in HTML.");
+    console.error("Element with ID 'family-name-display' not found in HTML.");
     return;
   }
  
   if (!accessToken) {
-    console.warn("⚠️ No access token found. User might not be logged in.");
+    console.warn("No access token found. User might not be logged in.");
     familyNameElement.textContent = "Not logged in";
     return;
   }
  
   try {
     familyNameElement.textContent = "Fetching..."; // Indicate loading
- 
-    console.log("🔍 Fetching family name with access token:", accessToken);
  
     const response = await fetch(
       "https://oxbrng5c0c.execute-api.ap-southeast-1.amazonaws.com/dev1/familyname",
@@ -50,22 +48,19 @@ async function fetchFamilyName() {
     );
  
     const responseText = await response.text();
-    console.log("📩 Raw Response Text:", responseText);
- 
     const result = JSON.parse(responseText);
-    console.log("📜 Parsed Response JSON:", result);
  
     if (response.ok) {
       const parsedBody = JSON.parse(result.body);
-      console.log("✅ Fetched Family Name:", parsedBody.family_name);
+      console.log("Fetched Family Name:", parsedBody.family_name);
  
       familyNameElement.textContent = `Welcome, ${parsedBody.family_name}`;
     } else {
-      console.error("❌ Failed to fetch family name:", result.message);
+      console.error("Failed to fetch family name:", result.message);
       familyNameElement.textContent = "Failed to load name";
     }
   } catch (error) {
-    console.error("❌ Error fetching family name:", error);
+    console.error("Error fetching family name:", error);
     familyNameElement.textContent = "Error loading name";
   }
 }
@@ -80,8 +75,6 @@ async function submitForm(email, password, mfaCode, session) {
   }
  
   try {
-    console.log("📤 Sending login request:", payload);
- 
     const response = await fetch(
       "https://oxbrng5c0c.execute-api.ap-southeast-1.amazonaws.com/dev1/familyname",
       {
@@ -94,12 +87,9 @@ async function submitForm(email, password, mfaCode, session) {
     );
  
     const result = await response.json();
-    console.log("📥 Response received:", result);
- 
     if (response.ok && result.statusCode === 200) {
       const parsedBody = JSON.parse(result.body);
-      console.log("✅ Tokens received:", parsedBody);
- 
+      
       // Store tokens in sessionStorage
       storeAccessToken(parsedBody.accessToken);
       sessionStorage.setItem("id_token", parsedBody.idToken);
@@ -116,7 +106,7 @@ async function submitForm(email, password, mfaCode, session) {
       });
     } else if (response.ok && result.statusCode === 202) {
       const session = result.session;
-      console.log("🔐 MFA required. Session token:", session);
+      console.log("MFA required. Session token:", session);
  
       Swal.fire({
         title: "🔐 MFA Required",
@@ -138,7 +128,7 @@ async function submitForm(email, password, mfaCode, session) {
       }
     }
   } catch (error) {
-    console.error("❌ An error occurred:", error);
+    console.error(" An error occurred:", error);
     displayError("Unable to connect to the server. Please check your internet and try again.");
   }
 }

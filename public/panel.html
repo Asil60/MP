@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="./panelstyle.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="login.js"></script>
   <script src="./ec2.js"></script>
 </head>
@@ -37,9 +40,9 @@
       <a class="sidenav-link">
         <span class="text" id="family-name-display">Loading...</span>
       </a>
-      <a href="/index.html" class="sidenav-link">
+      <a class="sidenav-link1">
         <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;&nbsp;
-        <span class="text">Sign Out </span>
+        <span class="text" id="logoutButton">Sign Out </span>
        
       </a>
     </div>
@@ -88,27 +91,41 @@
         <canvas id="requestsErrorsChart"></canvas>
       </div>
     </div>
-   
   </div>
- 
-  <!-- Summary Section -->
-  <div class="summary-section">
-      <h1>Summary</h1>
-      <div class="value" id="summary">
-        Click the button below to generate a summary.
-      </div>
-      <!-- GPT Input Section -->
-      <div class="gpt-input-section">
-        <h2>Ask GPT</h2>
-        <textarea
+
+<!-- Summary Section -->
+<div class="summary-section">
+  <div class="section-container">
+    <!-- Timeframe Dropdown -->
+    <div class="dropdown-container">
+        <label for="timeframe">Select Timeframe:</label>
+        <select id="timeframe">
+            <option value="1hr">1 Hour</option>
+            <option value="2hr">2 Hours</option>
+            <option value="5hr">5 Hours</option>
+            <option value="10hr">10 Hours</option>
+            <option value="1day">1 Day</option>
+            <option value="5day">5 Days</option>
+            <option value="7day">7 Days</option>
+        </select>
+    </div>
+  <h1>Summary</h1>
+  <div class="value" id="summary">
+      Click the button below to generate a summary.
+  </div>
+  <!-- GPT Input Section -->
+  <div class="gpt-input-section">
+      <h2>Ask GPT</h2>
+      <textarea
           id="gpt-input"
           placeholder="Type your question here and press Enter..."></textarea>
-      </div>
-      <button id="generate-summary-button">Generate Summary</button>
   </div>
+  <button id="generate-summary-button">Generate Summary</button>
+</div>
 </div>
 <script src="app.js"></script>
 <script src="./askgpt.js"></script>
+<script src="./logout.js"></script>
 <script>
   // Fetch the family name after the panel page loads
   document.addEventListener("DOMContentLoaded", () => {
