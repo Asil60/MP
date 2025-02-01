@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="./panelstyle.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="login.js"></script>
   <script src="./ec2.js"></script>
 </head>
 <body>
-
+ 
  <!-- Main Layout -->
 <div class="layout-container">
   <!-- Sidebar -->
@@ -33,14 +34,17 @@
     </a>
     <div class ="Account">
       <p><ul><b>Account Page</b></ul></p>
-      <a href="/logs.html" class="sidenav-link">
-        <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;&nbsp; 
-        <span class="text">Log Out</span>
-        
+      <a class="sidenav-link">
+        <span class="text" id="family-name-display">Loading...</span>
+      </a>
+      <a href="/index.html" class="sidenav-link">
+        <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;&nbsp;
+        <span class="text">Sign Out </span>
+       
       </a>
     </div>
   </div>
-
+ 
   <!-- Main Content -->
   <div class="main-content">
     <div class="card-grid">
@@ -56,7 +60,7 @@
             <p id="ec2-status" class="Stopped">Instance Status: Stopped</p>
         </div>
     </div>
-    
+   
       <div class="card">
         <h1>Current CPU Usage</h1>
         <div class="value" id="cpu-usage">1.9%</div>
@@ -84,9 +88,9 @@
         <canvas id="requestsErrorsChart"></canvas>
       </div>
     </div>
-    
+   
   </div>
-
+ 
   <!-- Summary Section -->
   <div class="summary-section">
       <h1>Summary</h1>
@@ -105,20 +109,26 @@
 </div>
 <script src="app.js"></script>
 <script src="./askgpt.js"></script>
+<script>
+  // Fetch the family name after the panel page loads
+  document.addEventListener("DOMContentLoaded", () => {
+    fetchFamilyName();
+  });
+</script>
 </body>
 <script>
  const API_URL = "https://07op85wb39.execute-api.ap-southeast-1.amazonaws.com/prod/ec2";
-
+ 
 async function fetchEC2Status() {
     const action = "status"; // The action to perform
     const instanceIds = "i-062ae4e7dfac33f4d"; // Replace with your instance ID
-
+ 
     // Construct the full API URL with query parameters
     const fullUrl = `${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)}`;
-
+ 
     try {
         console.log(`Sending API Request to: ${fullUrl}`);
-
+ 
         // Make the GET request
         const response = await fetch(fullUrl, {
             method: "GET",
@@ -126,22 +136,22 @@ async function fetchEC2Status() {
                 "Content-Type": "application/json",
             },
         });
-
+ 
         // Check if the response is successful
         if (!response.ok) {
             console.error(`API Request failed with status: ${response.status} ${response.statusText}`);
             return;
         }
-
+ 
         // Parse and log the JSON response
         const data = await response.json();
         console.log("API Response:", data);
-
+ 
         // Update the UI based on the instance status
         const instanceStatus = data.instances && data.instances[instanceIds];
         const toggleSwitch = document.getElementById("ec2-toggle");
         const statusText = document.getElementById("ec2-status");
-
+ 
         if (instanceStatus === "running") {
             toggleSwitch.checked = true;
             toggleSwitch.classList.add("green");
@@ -158,18 +168,18 @@ async function fetchEC2Status() {
         document.getElementById("ec2-status").innerText = "Instance Status: Error fetching status";
     }
 }
-
+ 
 // Function to toggle EC2 state (start/stop)
 async function toggleEC2State() {
     const toggleSwitch = document.getElementById("ec2-toggle");
     const instanceIds = "i-062ae4e7dfac33f4d"; // Replace with your instance ID
     const action = toggleSwitch.checked ? "start" : "stop"; // Determine action based on toggle state
-
+ 
     const fullUrl = `${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)}`;
-
+ 
     try {
         console.log(`Sending API Request to: ${fullUrl}`);
-
+ 
         // Make the GET request
         const response = await fetch(fullUrl, {
             method: "GET",
@@ -177,19 +187,19 @@ async function toggleEC2State() {
                 "Content-Type": "application/json",
             },
         });
-
+ 
         if (!response.ok) {
             console.error(`API Request failed with status: ${response.status} ${response.statusText}`);
             toggleSwitch.checked = !toggleSwitch.checked; // Revert toggle state on failure
             return;
         }
-
+ 
         const data = await response.json();
         console.log("API Response:", data);
-
+ 
         // Update the UI based on the action
         const statusText = document.getElementById("ec2-status");
-
+ 
         if (action === "start") {
             toggleSwitch.classList.add("green");
             toggleSwitch.classList.remove("red");
@@ -204,15 +214,15 @@ async function toggleEC2State() {
         toggleSwitch.checked = !toggleSwitch.checked; // Revert toggle state on failure
     }
 }
-
+ 
 // Attach the toggle switch handler
 document.getElementById("ec2-toggle").addEventListener("change", toggleEC2State);
-
+ 
 // Fetch the status on page load
 document.addEventListener("DOMContentLoaded", () => {
     fetchEC2Status();
 });
-
+ 
 </script>
-
+ 
 </html>
