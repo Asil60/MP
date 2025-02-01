@@ -64,6 +64,9 @@ body {
   margin-right: 10px;
   font-size: 1.2rem;
 }
+.Account{
+  margin-bottom: 10%;
+}
 
 /* Main Content */
 .main-content {
@@ -76,15 +79,15 @@ body {
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
 }
 
 .card {
   background: linear-gradient(145deg, #1e1e2e, #2f2f4f); /* Subtle gradient background */
-  border-radius: 15px; /* Consistent rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Polished shadow */
-  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  padding: 15px;
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -94,43 +97,41 @@ body {
 
 /* Individual Card Themes */
 .card:nth-child(1) {
-  background: linear-gradient(145deg, #2e265d, #432ca3); /* Purple gradient */
+  background: linear-gradient(145deg, #2e265d, #432ca3);
 }
 
 .card:nth-child(2) {
-  background: linear-gradient(145deg, #265d4f, #36935a); /* Green gradient */
+  background: linear-gradient(145deg, #265d4f, #36935a);
 }
 
 .card:nth-child(3) {
-  background: linear-gradient(145deg, #5d2642, #ad3966); /* Pink gradient */
+  background: linear-gradient(145deg, #5d2642, #ad3966);
 }
 
 .card:nth-child(4) {
-  background: linear-gradient(145deg, #5d5d26, #ae9445); /* Yellow gradient */
+  background: linear-gradient(145deg, #5d5d26, #ae9445);
 }
 
 .card:nth-child(5) {
-  background: linear-gradient(145deg, #26425d, #4985b6); /* Blue gradient */
+  background: linear-gradient(145deg, #26425d, #4985b6);
 }
-
 
 /* Shared Card Styles */
 .card h1 {
-  font-size: 1rem;
-  color: #fffcfc; /* Light gray text */
+  font-size: 0.9rem;
+  color: #fffcfc;
 }
 
 .card .value {
-  font-size: 2rem;
-  font-weight: 900;
+  font-size: 1.6rem;
+  font-weight: 700;
   color: #ffffff;
   text-align: center;
 }
 
-
 .card .refresh-time {
-  font-size: 0.8rem;
-  color: #aaa; /* Subtle gray for timestamps */
+  font-size: 0.7rem;
+  color: #aaa;
 }
 
 .card-container2 {
@@ -139,37 +140,113 @@ body {
 
 .card-container2 {
   display: flex;
-  justify-content: center; /* Center the card within the container */
+  justify-content: center;
   align-items: center;
-  padding: 20px; /* Add some padding */
+  padding: 20px;
 }
 
 .card-container2 .card {
-  background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d); /* Dark gradient with a subtle shine */
-  border-radius: 20px; /* Smooth rounded edges */
-  box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05); /* Neumorphic shadow */
-  padding: 20px;
-  color: #fefbfb; /* Bright text for readability */
-  width: 100%; /* Full width */
-  max-width: 1300px; /* Set a maximum width */
+  background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d);
+  border-radius: 15px;
+  box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  color: #fefbfb;
+  width: 100%;
+  max-width: 1200px;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Spacing between elements */
-  align-items: center; /* Center align content */
+  gap: 10px;
+  align-items: center;
   text-align: center;
 }
 
 .card-container2 .card h1 {
-  font-size: 1rem; /* Large heading */
-  color: #ffffff; /* Accent color for the heading */
+  font-size: 0.9rem;
+  color: #ffffff;
   margin-bottom: 10px;
 }
 
 .card-container2 .card canvas {
-  background-color: #000000; /* Dark background for the chart area */
-  border-radius: 10px; /* Rounded edges for the chart */
+  background-color: #000000;
+  border-radius: 10px;
   padding: 10px;
-  box-shadow: inset 2px 2px 4px rgb(255, 255, 255), inset -2px -2px 4px #ffffff; /* Subtle inner shadow */
+  box-shadow: inset 2px 2px 4px rgb(255, 255, 255), inset -2px -2px 4px #ffffff;
+}
+
+/* Instance Status - Simple & Clean */
+#ec2-status {
+  font-size: 0.85rem; /* Compact text size */
+  font-weight: 600;
+  padding: 4px 8px; /* Small padding */
+  border-radius: 5px; /* Rounded edges */
+  display: inline-block;
+  margin-top: 15px; /* Moved slightly below the toggle */
+  text-align: center;
+  background-color: #1c1c1e; /* Blackish background */
+  color: #ffffff; /* Default white text */
+  min-width: 100px;
+  border: 1px solid transparent; /* Border adjustment */
+  transition: color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+.running {
+  color: #32a852; /* Green text for Running */
+  border-color: #32a852; /* Green border */
+}
+
+.stopped {
+  color: #e63946; /* Red text for Stopped */
+  border-color: #e63946; /* Red border */
+}
+
+.error {
+  color: #e0a917; /* Yellowish text for Error */
+  border-color: #e0a917; /* Yellowish border */
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+  margin-top: 10px;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d34b39; /* Default color */
+  transition: 0.4s;
+  border-radius: 30px; /* Rounded switch */
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #60cf85; /* Green for ON */
+}
+
+input:checked + .slider:before {
+  transform: translateX(30px); /* Move slider to right */
 }
 
 
@@ -283,52 +360,6 @@ body {
   box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(255, 255, 255, 0.1); /* Pressed effect */
 }
 
-
-/* Toggle Switch Styles */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 30px;
-  margin-top: 10px;
-}
-
-.toggle-switch input {
-  display: none; /* Hide the default checkbox */
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #d34b39; /* Default color (stop) */
-  transition: 0.4s;
-  border-radius: 30px; /* Rounded switch */
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-
-/* When toggled on (Start) */
-input:checked + .slider {
-  background-color: #60cf85; /* Green color for Start */
-}
-
-input:checked + .slider:before {
-  transform: translateX(30px); /* Move the slider to the right */
-}
 
 /* Responsive Adjustments */
 @media (max-width: 1300px) {

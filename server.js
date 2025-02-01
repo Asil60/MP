@@ -6,9 +6,9 @@ const app = express();
 const PORT = 3000;
 
 // Grafana API configuration
-const GRAFANA_API_URL = "http://18.136.43.13:3000/api/datasources/proxy/1/api/v1/query";
-const GRAFANA_API_URL_RANGE = "http://18.136.43.13:3000/api/datasources/proxy/1/api/v1/query_range";
-const API_KEY = "glsa_6AvxaOVDiUgTCde5nqYnf3TBlVwE1lJt_0b9647e9"; // Replace with your Grafana API key
+const GRAFANA_API_URL = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query";
+const GRAFANA_API_URL_RANGE = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query_range";
+const API_KEY = "glsa_YVEZzcvnH5yrMZhyNMUi8iomZgEv8sps_33763bf6"; // Replace with your Grafana API key
 
 // OpenAI API configuration
 const openai = new OpenAI({
@@ -23,7 +23,7 @@ app.use(express.json());
 app.get("/cpu-usage", async (req, res) => {
   try {
     const query =
-      '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="10.0.1.147:9100"}[1m])))';
+      '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="localhost:9100"}[1m])))';
 
     const response = await axios.get(GRAFANA_API_URL, {
       params: {
@@ -48,7 +48,7 @@ app.get("/cpu-usage", async (req, res) => {
 app.get("/ram-usage", async (req, res) => {
   try {
     const query =
-      '100 * (1 - (node_memory_MemAvailable_bytes{instance="10.0.1.147:9100"} / node_memory_MemTotal_bytes{instance="10.0.1.147:9100"}))';
+      '100 * (1 - (node_memory_MemAvailable_bytes{instance="localhost:9100"} / node_memory_MemTotal_bytes{instance="localhost:9100"}))';
 
     const response = await axios.get(GRAFANA_API_URL, {
       params: {
@@ -98,7 +98,7 @@ app.get("/root-fs-usage", async (req, res) => {
 app.get("/server-uptime", async (req, res) => {
   try {
     const query =
-      'time() - node_boot_time_seconds{instance="10.0.1.147:9100"}';
+      'time() - node_boot_time_seconds{instance="localhost:9100"}';
 
     const response = await axios.get(GRAFANA_API_URL, {
       params: {

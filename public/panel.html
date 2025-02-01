@@ -6,6 +6,7 @@
   <title>Lumiere Proxy Dashboard</title>
   <link rel="stylesheet" href="./panelstyle.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="./ec2.js"></script>
 </head>
 <body>
@@ -30,6 +31,14 @@
     <a href="/logs.html" class="sidenav-link">
       <span class="icon">📜</span> <span class="text">Logs</span>
     </a>
+    <div class ="Account">
+      <p><ul><b>Account Page</b></ul></p>
+      <a href="/logs.html" class="sidenav-link">
+        <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;&nbsp; 
+        <span class="text">Log Out</span>
+        
+      </a>
+    </div>
   </div>
 
   <!-- Main Content -->
@@ -44,7 +53,7 @@
                 <span class="toggle-text"></span>
               </span>
             </label>
-            <p id="ec2-status">Instance Status: Stopped</p>
+            <p id="ec2-status" class="Stopped">Instance Status: Stopped</p>
         </div>
     </div>
     
