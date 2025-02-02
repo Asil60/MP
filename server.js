@@ -254,10 +254,13 @@ app.get("/status-codes", async (req, res) => {
     });
 
     const results = response.data.data.result;
-    const statusData = results.map((item) => ({
-      status: item.metric.status,
-      value: parseFloat(item.values[item.values.length - 1][1]),
-    }));
+
+    // Extract the most recent value for each status
+    const statusData = results.map((item) => {
+      const status = item.metric.status; // e.g., "200", "404"
+      const latestValue = parseFloat(item.values[item.values.length - 1][1]); // Get the last value
+      return { status, value: latestValue };
+    });
 
     res.json(statusData);
   } catch (error) {
@@ -265,6 +268,7 @@ app.get("/status-codes", async (req, res) => {
     res.status(500).send("Failed to fetch status codes.");
   }
 });
+
 
 
 

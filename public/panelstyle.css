@@ -197,6 +197,36 @@ body {
 }
 
 
+.piechart .card {
+  margin-top: 50px;
+  background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d);
+  border-radius: 15px;
+  box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  color: #fefbfb;
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+}
+
+.piechart .card h1 {
+  font-size: 0.9rem;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.piechart .card canvas {
+  background-color: #000000;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: inset 2px 2px 4px rgb(255, 255, 255), inset -2px -2px 4px #ffffff;
+}
+
+
 /* Instance Status - Simple & Clean */
 #ec2-status {
   font-size: 0.85rem; /* Compact text size */

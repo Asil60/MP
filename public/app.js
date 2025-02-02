@@ -246,6 +246,7 @@ function fetchAllData() {
   fetchServerUptime();
   fetchAndUpdateChart();
   fetchNginxStatus();
+  fetchStatusCodes()
 }
 
 // Add event listener for dropdown change
@@ -380,6 +381,63 @@ async function fetchAndUpdateChart() {
   } catch (error) {
     console.error("Error updating the chart:", error);
   }
+}
+// Global variable to store the chart instance
+let statusChart = null;
+
+// Function to fetch status codes and update the chart
+async function fetchStatusCodes() {
+  try {
+    const response = await fetch("/status-codes");
+    const data = await response.json();
+
+    if (!data || data.length === 0) throw new Error("No status data available.");
+
+    // Prepare data for the chart
+    const labels = data.map((item) => `Status ${item.status}`);
+    const values = data.map((item) => item.value);
+
+    // Update the chart
+    updateChart(labels, values);
+
+    const now = new Date();
+    document.getElementById("status-refresh-time").textContent = `Last updated at ${now.toLocaleTimeString()}`;
+  } catch (error) {
+    console.error("Error fetching status codes:", error);
+    document.getElementById("status-refresh-time").textContent = "Error fetching data.";
+  }
+}
+
+// Function to update the pie chart
+function updateChart(labels, values) {
+  const ctx = document.getElementById("statusChart").getContext("2d");
+
+  // Destroy the previous chart instance if it exists
+  if (statusChart) {
+    statusChart.destroy();
+  }
+
+  // Create a new chart instance
+  statusChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          data: values,
+          backgroundColor: ["#4caf50", "#ffeb3b", "#2196f3", "#f44336", "#9c27b0"], // Example colors
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "bottom",
+        },
+      },
+    },
+  });
 }
 
 // Initial setup: Live Mode should be active on page load
