@@ -440,5 +440,60 @@ function updateChart(labels, values) {
   });
 }
 
+// Function to fetch Summary using OpenAI
+async function fetchSummary() {
+  try {
+    // Display loading text
+    document.getElementById("summary").innerHTML = "<p>Generating summary...</p>";
+
+    // Prepare the data to be summarized
+    const data = {
+      cpuUsage: document.getElementById("cpu-usage").textContent,
+      ramUsage: document.getElementById("ram-usage").textContent,
+      rootFSUsage: document.getElementById("root-fs-usage").textContent,
+      serverUptime: document.getElementById("server-uptime").textContent,
+    };
+
+    // Fetch request-error data
+    const response = await fetch("/requests-errors");
+    const requestErrorData = await response.json();
+
+    if (requestErrorData.data && requestErrorData.data.length > 0) {
+      data.requestsErrors = requestErrorData.data[0]; // Extract first dataset
+    } else {
+      data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
+    }
+
+    // Send data to the backend for summarization
+    const summaryResponse = await fetch("/summarize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data }),
+    });
+
+    const result = await summaryResponse.json();
+    if (!result.summary) throw new Error("No summary returned.");
+
+    // Format the summary into an ordered list
+    const formattedSummary = result.summary
+      .split(/\d\.\s+/) // Split on "1. ", "2. ", etc.
+      .filter((item) => item.trim() !== "") // Remove empty items
+      .map((item) => `<li>${item.trim()}</li>`) // Wrap each sentence in <li>
+      .join(""); // Join all list items into a single string
+
+    document.getElementById("summary").innerHTML = `<ol>${formattedSummary}</ol>`;
+  } catch (error) {
+    console.error("Error fetching insights:", error);
+    document.getElementById("summary").innerHTML =
+      "<p style='color: red;'>Error generating insights. Please try again.</p>";
+  }
+}
+
+// Add event listener to the button
+document.getElementById("generate-summary-button").addEventListener("click", fetchSummary);
+
+
 // Initial setup: Live Mode should be active on page load
 enableLiveMode();
