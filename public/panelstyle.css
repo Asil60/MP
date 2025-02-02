@@ -93,7 +93,7 @@ body {
  
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Auto-fit with a minimum width */
   gap: 10px;
 }
  
@@ -362,7 +362,7 @@ input:checked + .slider:before {
   flex-direction: column;
   gap: 20px;
   min-width: 0;
-  height: 1000px;
+  height: 815px;
 }
  
 .summary-section h1 {
@@ -373,7 +373,7 @@ input:checked + .slider:before {
 .summary-section .value {
   font-size: 0.95rem;
   padding: 20px;
-  height: 470px;
+  height: 300px;
   background-color: #000000;
   color: #bbb;
   border-radius: 8px;
@@ -381,7 +381,7 @@ input:checked + .slider:before {
   text-align: justify;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
  
 /* Graph Container */
