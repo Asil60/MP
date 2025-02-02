@@ -63,6 +63,11 @@
             <p id="ec2-status" class="Stopped">Instance Status: Stopped</p>
         </div>
     </div>
+    <div class="card">
+      <h1>Nginx Status</h1>
+      <div class="value" id="nginx-status">ON</div>
+      <div class="refresh-time" id="nginx-refresh-time">Last updated at 8:28:45 PM</div>
+    </div>
    
       <div class="card">
         <h1>Current CPU Usage</h1>
@@ -91,6 +96,12 @@
         <canvas id="requestsErrorsChart"></canvas>
       </div>
     </div>
+    <div class="card-container3">
+      <div class="card">
+        <h1>Status Code</h1>
+        <canvas id="statuscodechart"></canvas>
+      </div>
+    </div>
   </div>
 
 <!-- Summary Section -->
@@ -100,7 +111,8 @@
     <div class="dropdown-container">
       <label for="timeframe">Select Timeframe:</label>
       <select id="timeframe">
-        <option value="3600" selected>1 Hour</option>
+        <option value="live" selected>Live</option>
+        <option value="3600">1 Hour</option>
         <option value="7200">2 Hours</option>
         <option value="18000">5 Hours</option>
         <option value="36000">10 Hours</option>

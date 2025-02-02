@@ -8,6 +8,7 @@ const PORT = 3000;
 // Grafana API configuration
 const GRAFANA_API_URL = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query";
 const GRAFANA_API_URL_RANGE = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query_range";
+const LOKI_API_URL = "http://13.251.167.13:3000/api/datasources/proxy/9/loki/api/v1/query_range";
 const API_KEY = "glsa_YVEZzcvnH5yrMZhyNMUi8iomZgEv8sps_33763bf6"; // Replace with your Grafana API key
 
 // OpenAI API configuration
@@ -18,6 +19,75 @@ const openai = new OpenAI({
 // Middleware to serve static files and parse JSON
 app.use(express.static("public"));
 app.use(express.json());
+
+function getStepSize(start, end) {
+  const range = end - start;
+  if (range > 7 * 24 * 3600) return 6 * 3600; // 6 hours for > 7 days
+  if (range > 2 * 24 * 3600) return 3600; // 1 hour for > 2 days
+  return 10; // 10 seconds for shorter ranges
+}
+
+// 🔹 Function to dynamically determine step size based on time range
+function getStepSized(start, end) {
+  const range = end - start;
+  if (range > 7 * 24 * 3600) return 86400; // 1 day for >7 days
+  if (range > 2 * 24 * 3600) return 3600; // 1 hour for >2 days
+  if (range > 3600) return 300; // 5 minutes for >1 hour
+  return 1
+}
+
+// 🔹 Function to fetch and compute average from time-series data
+async function fetchAndComputeAverage(query, start) {
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+
+    const response = await axios.get(GRAFANA_API_URL_RANGE, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0 || !result[0].values) {
+      return { success: false, error: "No data available for the range." };
+    }
+
+    const values = result[0].values;
+    const average = values.reduce((sum, [, value]) => sum + parseFloat(value), 0) / values.length;
+
+    return { success: true, average: average.toFixed(2) };
+  } catch (error) {
+    console.error(`Error fetching data for query: ${query}`, error.message);
+    return { success: false, error: "Failed to fetch data for range." };
+  }
+}
+
+// Endpoint for Nginx Status
+app.get("/nginx-status", async (req, res) => {
+  try {
+    const query = `{__name__="nginx_up", instance="localhost:9113", job="nginx"}`;
+
+    const response = await axios.get(GRAFANA_API_URL, {
+      params: { query },
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+
+    const result = response.data.data.result;
+
+    // Check if there's a valid result
+    if (result.length > 0) {
+      const nginxStatus = parseFloat(result[0].value[1]); // Get the status value (1 or 0)
+      res.json({ status: nginxStatus });
+    } else {
+      res.json({ status: 0 }); // Return 0 if no result found
+    }
+  } catch (error) {
+    console.error("Error fetching Nginx status:", error.message);
+    res.status(500).send("Failed to fetch Nginx status.");
+  }
+});
 
 // Endpoint for CPU usage
 app.get("/cpu-usage", async (req, res) => {
@@ -43,6 +113,7 @@ app.get("/cpu-usage", async (req, res) => {
     res.status(500).send("Failed to fetch CPU usage data.");
   }
 });
+
 
 // Endpoint for RAM usage
 app.get("/ram-usage", async (req, res) => {
@@ -168,6 +239,33 @@ app.get("/requests-errors", async (req, res) => {
   }
 });
 
+// Endpoint to fetch status codes
+app.get("/status-codes", async (req, res) => {
+  try {
+    const query = `sum by (status) (count_over_time({job="nginx"} | json | __error__="" | line_format "{{.status}}" [5m]))`;
+    const start = Math.floor(Date.now() / 1000) - 3600; // Last 1 hour
+    const end = Math.floor(Date.now() / 1000); // Current time
+
+    const response = await axios.get(LOKI_API_URL, {
+      params: { query, start, end, step: 10 },
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+
+    const results = response.data.data.result;
+    const statusData = results.map((item) => ({
+      status: item.metric.status,
+      value: parseFloat(item.values[item.values.length - 1][1]),
+    }));
+
+    res.json(statusData);
+  } catch (error) {
+    console.error("Error fetching status codes:", error.message);
+    res.status(500).send("Failed to fetch status codes.");
+  }
+});
+
 
 
 
@@ -255,7 +353,6 @@ ${uptimeMessage}
 app.post("/ask-gpt", async (req, res) => {
   try {
     const { question, data } = req.body;
-
     // Log received data for debugging
     console.log("Received Data for GPT:", data);
 
@@ -349,6 +446,86 @@ app.get("/cpu-usage-range", async (req, res) => {
   } catch (error) {
     console.error("Error fetching CPU usage data for range:", error.message);
     res.status(500).json({ success: false, error: "Failed to fetch CPU usage data for range." });
+  }
+});
+
+// 🔹 RAM Usage Endpoint (Average Over Time)
+app.get("/ram-usage-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  const query = '100 * (1 - (node_memory_MemAvailable_bytes{instance="localhost:9100"} / node_memory_MemTotal_bytes{instance="localhost:9100"}))';
+  const result = await fetchAndComputeAverage(query, start);
+  res.json(result);
+});
+
+// 🔹 Root FS Usage Endpoint (Average Over Time)
+app.get("/root-fs-usage-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  const query = '100 * (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"}';
+  const result = await fetchAndComputeAverage(query, start);
+  res.json(result);
+});
+
+// 🔹 Fetch Requests & Errors Over Time (All Data)
+app.get("/requests-errors-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) {
+    return res.status(400).json({ success: false, error: "Start timestamp is required." });
+  }
+
+  try {
+    const end = Math.floor(Date.now() / 1000); // Current time in UNIX seconds
+    const step = Math.max(300, Math.floor((end - start) / 1000)); // At least 5-minute steps
+
+    const query = 'rate(nginx_http_requests_total[5m])';
+
+    console.log(`Fetching data from Grafana API with start=${start}, end=${end}, step=${step}`);
+
+    // Fetch data from Grafana API
+    const response = await axios.get(GRAFANA_API_URL_RANGE, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const resultData = response.data?.data?.result;
+    if (!resultData || resultData.length === 0) {
+      console.log("❌ No data received from Grafana API.");
+      return res.json({ success: false, error: "No data available for the range." });
+    }
+
+    // Process time-series data: Combine all series into a single dataset
+    let allTimestamps = [];
+    let allValues = [];
+    resultData.forEach((series) => {
+      const timestamps = series.values.map((value) => value[0] * 1000); // Convert to milliseconds
+      const values = series.values.map((value) => parseFloat(value[1]));
+      allTimestamps = allTimestamps.concat(timestamps);
+      allValues = allValues.concat(values);
+    });
+
+    // Sort timestamps and values
+    const combinedData = allTimestamps
+      .map((timestamp, index) => ({ timestamp, value: allValues[index] }))
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    // Extract sorted timestamps and values
+    const sortedTimestamps = combinedData.map((item) => new Date(item.timestamp).toLocaleString());
+    const sortedValues = combinedData.map((item) => item.value);
+
+    // Format data for response
+    const formattedData = {
+      timestamps: sortedTimestamps,
+      values: sortedValues,
+    };
+
+    // Send response with all data
+    res.json({ success: true, data: formattedData });
+  } catch (error) {
+    console.error("❌ Error fetching requests/errors data for range:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch requests/errors data for range." });
   }
 });
 
