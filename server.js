@@ -321,6 +321,10 @@ app.post("/summarize", async (req, res) => {
     let errorSpikeDetected = false;
     let avgValue = 0;
 
+    // 🔹 Debugging: Print received data
+    console.log("Received Data:", data);
+    console.log("Nginx Status Value:", data.nginxStatus);
+
     if (data.requestsErrors.timestamps.length > 0) {
       const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
       const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
@@ -363,7 +367,7 @@ app.post("/summarize", async (req, res) => {
     let remoteIPSummary = data.remoteIPs || "No remote IP activity detected.";
 
     // ✅ Include Nginx Status
-    let nginxStatusMessage = data.nginxStatus === "1" ? "Nginx is currently running smoothly." : "Nginx is DOWN. Immediate action needed.";
+    let nginxStatusMessage = data.nginxStatus === "ON" ? "Nginx is currently running smoothly." : "Nginx is DOWN. Immediate action needed.";
 
     // 🔹 Construct the final prompt for GPT
     const prompt = `
