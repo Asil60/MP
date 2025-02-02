@@ -197,36 +197,68 @@ body {
 }
  
  
-.piechart .card {
-  margin-top: 50px;
+.piechart {
+  display: flex; /* Align items side by side */
+  justify-content: flex-start; /* Align charts to the left */
+  align-items: stretch; /* Make both charts stretch vertically */
+  gap: 20px; /* Add spacing between the two charts */
+  margin: 0; /* Remove extra margin */
+  padding: 0; /* Remove extra padding */
+  width: 100%; /* Ensure the container spans full width */
+}
+ 
+.piechart > .card {
   background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d);
   border-radius: 15px;
   box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
   padding: 15px;
   color: #fefbfb;
-  width: 100%;
-  max-width: 450px;
+  max-width: 450px; /* Fixed size for the first chart */
+  flex: 0 0 450px; /* Prevent it from growing or shrinking */
   display: flex;
   flex-direction: column;
-  gap: 10px;
   align-items: center;
   text-align: center;
 }
  
-.piechart .card h1 {
+.piechart2 {
+  flex: 1; /* Allow this container to grow and fill remaining space */
+  display: flex; /* Flexbox for inner alignment */
+  justify-content: center; /* Center the second pie chart inside */
+  align-items: center; /* Align items vertically */
+}
+ 
+.piechart2 .card {
+  background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d);
+  border-radius: 15px;
+  box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  color: #fefbfb;
+  flex: 1; /* Allow it to fill the remaining space inside .piechart2 */
+  width: 100%; /* Ensure it spans the available width */
+  max-width: none; /* Remove any restrictions on max width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+ 
+.piechart .card h1, .piechart2 .card h1 {
   font-size: 0.9rem;
   color: #ffffff;
   margin-bottom: 10px;
 }
  
-.piechart .card canvas {
+.piechart .card canvas, .piechart2 .card canvas {
   background-color: #000000;
   border-radius: 10px;
   padding: 10px;
   box-shadow: inset 2px 2px 4px rgb(255, 255, 255), inset -2px -2px 4px #ffffff;
+  width: 100%; /* Make canvas fill the card */
+  height: auto; /* Maintain aspect ratio */
 }
- 
- 
+
+
 /* Instance Status - Simple & Clean */
 #ec2-status {
   font-size: 0.85rem; /* Compact text size */

@@ -246,7 +246,8 @@ function fetchAllData() {
   fetchServerUptime();
   fetchAndUpdateChart();
   fetchNginxStatus();
-  fetchStatusCodes()
+  fetchStatusCodes();
+  fetchRemoteIPData();
 }
 
 // Add event listener for dropdown change
@@ -359,7 +360,7 @@ async function fetchAndUpdateChart() {
               label: "Total Requests & Errors",
               data: values,
               borderColor: "rgb(135, 27, 230)",
-              backgroundColor: "rgba(160, 37, 217, 0.2)",
+              backgroundColor: "rgba(160, 37, 217, 0)",
               fill: true,
               tension: 0.2,
             },
@@ -440,6 +441,97 @@ function updateChart(labels, values) {
   });
 }
 
+/// Global variable to store the bar chart instance
+let ipBarChart = null;
+
+// Function to fetch remote IP data and update the bar chart
+async function fetchRemoteIPData() {
+  try {
+    const response = await fetch("/remote-ip-data");
+    const data = await response.json();
+
+    if (!data || data.length === 0) throw new Error("No remote IP data available.");
+
+    // Prepare data for the bar chart
+    const labels = data.map((item) => item.ip); // IP addresses
+    const values = data.map((item) => item.value); // Request counts
+    const timestamps = data.map((item) => item.timestamp); // Timestamps
+
+    // Update the bar chart
+    updateBarChart(labels, values, timestamps);
+
+    const now = new Date();
+    document.getElementById("ip-refresh-time").textContent = `Last updated at ${now.toLocaleTimeString()}`;
+  } catch (error) {
+    console.error("Error fetching remote IP data:", error);
+    document.getElementById("ip-refresh-time").textContent = "Error fetching data.";
+  }
+}
+
+function updateBarChart(labels, values, timestamps) {
+  const ctx = document.getElementById("ipChart").getContext("2d");
+
+  // Destroy the previous bar chart instance if it exists
+  if (ipBarChart) {
+    ipBarChart.destroy();
+  }
+
+  // Create a new bar chart instance
+  ipBarChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels, // Labels for the bars (IP addresses, though hidden in the chart)
+      datasets: [
+        {
+          label: "Requests",
+          data: values,
+          backgroundColor: [
+            "#4caf50",
+            "#ffeb3b",
+            "#2196f3",
+            "#f44336",
+            "#9c27b0",
+          ], // Example colors
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const value = context.raw;
+              const timestamp = timestamps[context.dataIndex];
+              return [`Requests: ${value}`, `Timestamp: ${timestamp}`];
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          display: false, // Hide the x-axis
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Request Count",
+            color: "#ffffff",
+            font: {
+              size: 14,
+            },
+          },
+          ticks: {
+            beginAtZero: true,
+          },
+        },
+      },
+    },
+  });
+}
+
+
+
 // Function to fetch Summary using OpenAI
 async function fetchSummary() {
   try {
@@ -448,21 +540,42 @@ async function fetchSummary() {
 
     // Prepare the data to be summarized
     const data = {
-      cpuUsage: document.getElementById("cpu-usage").textContent,
-      ramUsage: document.getElementById("ram-usage").textContent,
-      rootFSUsage: document.getElementById("root-fs-usage").textContent,
-      serverUptime: document.getElementById("server-uptime").textContent,
+      cpuUsage: document.getElementById("cpu-usage").textContent || "N/A",
+      ramUsage: document.getElementById("ram-usage").textContent || "N/A",
+      rootFSUsage: document.getElementById("root-fs-usage").textContent || "N/A",
+      serverUptime: document.getElementById("server-uptime").textContent || "N/A",
+      nginxStatus: document.getElementById("nginx-status").textContent || "N/A",
     };
 
-    // Fetch request-error data
-    const response = await fetch("/requests-errors");
-    const requestErrorData = await response.json();
+    // Fetch Status Code Data
+    const statusResponse = await fetch("/status-codes");
+    const statusData = await statusResponse.json();
+    if (statusData.length > 0) {
+      data.statusCodes = statusData.map((item) => `Status ${item.status}: ${item.value} times`).join(", ");
+    } else {
+      data.statusCodes = "No status code data available.";
+    }
 
+    // Fetch Remote IP Data
+    const ipResponse = await fetch("/remote-ip-data");
+    const ipData = await ipResponse.json();
+    if (ipData.length > 0) {
+      data.remoteIPs = ipData.map((item) => `${item.ip} made ${item.value} requests at ${item.timestamp}`).join("; ");
+    } else {
+      data.remoteIPs = "No remote IP data available.";
+    }
+
+    // Fetch request-error data
+    const requestErrorResponse = await fetch("/requests-errors");
+    const requestErrorData = await requestErrorResponse.json();
     if (requestErrorData.data && requestErrorData.data.length > 0) {
       data.requestsErrors = requestErrorData.data[0]; // Extract first dataset
     } else {
       data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
     }
+
+    // Debugging: Log the data before sending
+    console.log("Summary Data Sent to Backend:", JSON.stringify(data, null, 2));
 
     // Send data to the backend for summarization
     const summaryResponse = await fetch("/summarize", {
@@ -470,11 +583,14 @@ async function fetchSummary() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify({ data }), // Send full data
     });
 
     const result = await summaryResponse.json();
     if (!result.summary) throw new Error("No summary returned.");
+
+    // Debugging: Log the GPT-generated summary
+    console.log("GPT Summary Received:", result.summary);
 
     // Format the summary into an ordered list
     const formattedSummary = result.summary
@@ -493,6 +609,7 @@ async function fetchSummary() {
 
 // Add event listener to the button
 document.getElementById("generate-summary-button").addEventListener("click", fetchSummary);
+
 
 
 // Initial setup: Live Mode should be active on page load

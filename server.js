@@ -270,6 +270,42 @@ app.get("/status-codes", async (req, res) => {
 });
 
 
+// Endpoint to fetch remote IP data
+app.get("/remote-ip-data", async (req, res) => {
+  try {
+    const query = `topk(5, sum by (remote_addr) (rate({job="nginx"} | json | __error__="" [1m])))`;
+    const start = Math.floor(Date.now() / 1000) - 3600; // Last 1 hour
+    const end = Math.floor(Date.now() / 1000); // Current time
+
+    const response = await axios.get(LOKI_API_URL, {
+      params: { query, start, end, step: 10 },
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+
+    const results = response.data.data.result;
+
+    // Extract and format the data with timestamps
+    const ipData = results.map((item) => {
+      const ip = item.metric.remote_addr; // IP address
+      const latestValue = item.values[item.values.length - 1]; // Most recent value and timestamp
+      const value = parseFloat(latestValue[1]); // Extract value
+      const timestamp = new Date(parseFloat(latestValue[0]) * 1000).toLocaleString(); // Format timestamp
+      return { ip, value, timestamp };
+    });
+
+    res.json(ipData);
+  } catch (error) {
+    console.error("Error fetching remote IP data:", error.message);
+    res.status(500).send("Failed to fetch remote IP data.");
+  }
+});
+
+
+
+
+
 
 
 
@@ -280,7 +316,7 @@ app.post("/summarize", async (req, res) => {
   try {
     const { data } = req.body; // Receive the data to analyze
 
-    // Extract and process request-errors data
+    // ✅ Extract and process request-errors data
     let requestErrorsSummary = "No request error data available.";
     let errorSpikeDetected = false;
     let avgValue = 0;
@@ -310,7 +346,7 @@ app.post("/summarize", async (req, res) => {
       `;
     }
 
-    // Determine uptime stability
+    // ✅ Determine uptime stability
     let uptimeInHours = parseFloat(data.serverUptime);
     let uptimeMessage = uptimeInHours > 24
       ? "The system has been running stably for over a day."
@@ -320,39 +356,64 @@ app.post("/summarize", async (req, res) => {
       uptimeMessage += " However, request-error spikes suggest possible short downtimes or performance issues.";
     }
 
+    // ✅ Summarize Status Codes
+    let statusCodeSummary = data.statusCodes || "No status code data available.";
+
+    // ✅ Summarize Remote IP Requests
+    let remoteIPSummary = data.remoteIPs || "No remote IP activity detected.";
+
+    // ✅ Include Nginx Status
+    let nginxStatusMessage = data.nginxStatus === "1" ? "Nginx is currently running smoothly." : "Nginx is DOWN. Immediate action needed.";
+
+    // 🔹 Construct the final prompt for GPT
     const prompt = `
 You are an expert system monitoring assistant. Analyze the following system data:
-- CPU Usage: ${data.cpuUsage}
-- RAM Usage: ${data.ramUsage}
-- Root FS Usage: ${data.rootFSUsage}
-- Server Uptime: ${data.serverUptime}
-- Request Errors Trend:
-  ${requestErrorsSummary}
+- **CPU Usage:** ${data.cpuUsage}
+- **RAM Usage:** ${data.ramUsage}
+- **Root FS Usage:** ${data.rootFSUsage}
+- **Server Uptime:** ${data.serverUptime}
+- **Nginx Status:** ${nginxStatusMessage}
 
-1. Summarize the current state of the system.
-2. Predict what might happen if these trends continue for the next 24 hours.
-3. Explain what this data means for maintaining optimal system performance in a custom-built website.
-4. Identify potential bottlenecks or issues from the request-error trends and suggest solutions.
-5. Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
+📌 **Status Code Summary:**
+${statusCodeSummary}
 
-**Uptime Analysis:**
+🌍 **Remote IP Requests:**
+${remoteIPSummary}
+
+🚨 **Request Errors Trend:**
+${requestErrorsSummary}
+
+1️⃣ **Summarize the current state of the system.**
+2️⃣ Predict what might happen if these trends continue for the next 24 hours.
+3️⃣ Explain what this data means for maintaining optimal system performance in a custom-built website.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and suggest solutions.
+5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
+
+🔍 **Uptime Analysis:**
 ${uptimeMessage}
 `;
 
+    console.log("Prompt Sent to GPT:", prompt); // Debugging log
+
+    // 🔹 Make API call to OpenAI
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
+      model: "gpt-4", // Use GPT-4 for better summarization
+      messages: [{ role: "system", content: "You are a system monitoring assistant." },
+                 { role: "user", content: prompt }],
       max_tokens: 350,
       temperature: 0.7,
     });
 
     const summary = response.choices[0].message.content.trim();
+    console.log("GPT Summary Response:", summary); // Debugging log
+
     res.json({ summary });
   } catch (error) {
     console.error("Error generating summary and predictions:", error.message);
     res.status(500).send("Failed to generate summary and predictions.");
   }
 });
+
 
 app.post("/ask-gpt", async (req, res) => {
   try {
