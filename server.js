@@ -302,97 +302,75 @@ app.get("/remote-ip-data", async (req, res) => {
   }
 });
 
-// OpenAI summary endpoint
+// ✅ OpenAI Summary Endpoint (Now Includes Nginx Logs)
 app.post("/summarize", async (req, res) => {
   try {
-    const { data } = req.body; // Receive the data to analyze
+    const { data } = req.body;
 
-    // ✅ Extract and process request-errors data
+    // ✅ Extract & Summarize Nginx Logs
+    let nginxLogSummary = "No Nginx log data available.";
+    if (data.nginxLogs && data.nginxLogs.length > 0) {
+      nginxLogSummary = data.nginxLogs.map((log, index) => {
+        return `🔹 ${log.time} - **${log.remote_addr}** [${log.method}] \`${log.request}\` - **${log.status}**`;
+      }).join("\n");
+    }
+
+    // ✅ Extract & Summarize ModSecurity Logs
+    let modsecSummary = "No ModSecurity logs detected.";
+    if (data.modsecLogs && data.modsecLogs.length > 0) {
+      modsecSummary = data.modsecLogs.map((log) => {
+        return `🔹 Rule ID: ${log.ruleId} - **${log.message}**`;
+      }).join("\n");
+    }
+
+    // ✅ Extract & Summarize Request Errors
     let requestErrorsSummary = "No request error data available.";
-    let errorSpikeDetected = false;
-    let avgValue = 0;
-
-    // 🔹 Debugging: Print received data
-    console.log("Received Data:", data);
-    console.log("Nginx Status Value:", data.nginxStatus);
-
-    if (data.requestsErrors.timestamps.length > 0) {
+    if (data.requestsErrors && data.requestsErrors.timestamps.length > 0) {
       const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
       const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
-
-      avgValue =
-        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
-        data.requestsErrors.values.length;
-
-      const maxValue = Math.max(...data.requestsErrors.values);
-      const minValue = Math.min(...data.requestsErrors.values);
-
-      // Detect error spikes (if the max is much higher than the average)
-      if (maxValue > avgValue * 2) {
-        errorSpikeDetected = true;
-      }
-
+      const avgValue = data.requestsErrors.values.reduce((sum, val) => sum + val, 0) / data.requestsErrors.values.length;
       requestErrorsSummary = `
       - Latest request-error count at ${latestTime}: ${latestValue}
       - Average request-error count over the past hour: ${avgValue.toFixed(2)}
-      - Highest recorded request-error count: ${maxValue}
-      - Lowest recorded request-error count: ${minValue}
-      ${errorSpikeDetected ? "- **Spike in errors detected** (potential downtime or high traffic issue)." : ""}
       `;
     }
 
-    // ✅ Determine uptime stability
-    let uptimeInHours = parseFloat(data.serverUptime);
-    let uptimeMessage = uptimeInHours > 24
-      ? "The system has been running stably for over a day."
-      : `The system has been up for ${uptimeInHours.toFixed(1)} hours.`;
-
-    if (errorSpikeDetected) {
-      uptimeMessage += " However, request-error spikes suggest possible short downtimes or performance issues.";
-    }
-
-    // ✅ Summarize Status Codes
-    let statusCodeSummary = data.statusCodes || "No status code data available.";
-
-    // ✅ Summarize Remote IP Requests
-    let remoteIPSummary = data.remoteIPs || "No remote IP activity detected.";
-
-    // ✅ Include Nginx Status
-    let nginxStatusMessage = data.nginxStatus === "ON" ? "Nginx is currently running smoothly." : "Nginx is DOWN. Immediate action needed.";
-
-    // 🔹 Construct the final prompt for GPT
+    // ✅ Construct GPT Prompt
     const prompt = `
 You are an expert system monitoring assistant. Analyze the following system data:
 - **CPU Usage:** ${data.cpuUsage}
 - **RAM Usage:** ${data.ramUsage}
 - **Root FS Usage:** ${data.rootFSUsage}
 - **Server Uptime:** ${data.serverUptime}
-- **Nginx Status:** ${nginxStatusMessage}
+- **Nginx Status:** ${data.nginxStatus}
 
 📌 **Status Code Summary:**
-${statusCodeSummary}
+${data.statusCodes || "No status code data available."}
 
 🌍 **Remote IP Requests:**
-${remoteIPSummary}
+${data.remoteIPs || "No remote IP activity detected."}
 
 🚨 **Request Errors Trend:**
 ${requestErrorsSummary}
 
+🛡 **Security Threats Detected (ModSecurity Logs):**
+${modsecSummary}
+
+📜 **Nginx Logs (Past 1 Hour)**
+${nginxLogSummary}
+
 1️⃣ **Summarize the current state of the system.**
 2️⃣ Predict what might happen if these trends continue for the next 24 hours.
 3️⃣ Explain what this data means for maintaining optimal system performance in a custom-built website.
-4️⃣ Identify potential bottlenecks or issues from the request-error trends and suggest solutions.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and ModSecurity threats, then suggest solutions.
 5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
-
-🔍 **Uptime Analysis:**
-${uptimeMessage}
 `;
 
     console.log("Prompt Sent to GPT:", prompt); // Debugging log
 
-    // 🔹 Make API call to OpenAI
+    // ✅ Send Data to OpenAI
     const response = await openai.chat.completions.create({
-      model: "gpt-4", // Use GPT-4 for better summarization
+      model: "gpt-3.5-turbo",
       messages: [{ role: "system", content: "You are a system monitoring assistant." },
                  { role: "user", content: prompt }],
       max_tokens: 350,
@@ -408,7 +386,6 @@ ${uptimeMessage}
     res.status(500).send("Failed to generate summary and predictions.");
   }
 });
-
 
 app.post("/ask-gpt", async (req, res) => {
   try {
@@ -688,6 +665,55 @@ app.get("/modsecurity-data", async (req, res) => {
     res.status(500).send("Failed to fetch modsecurity data.");
   }
 });
+
+
+
+// Endpoint to fetch Nginx logs for the past 1 hour
+app.get("/nginx-logs", async (req, res) => {
+  try {
+    const start = Math.floor(Date.now() / 1000) - 3600; // Start time (1 hour ago)
+    const end = Math.floor(Date.now() / 1000); // Current time
+
+    const query = `{job="nginx"}`; // Loki query
+
+    const response = await axios.get(LOKI_API_URL, {
+      params: {
+        query,
+        start,
+        end,
+        step: 10, // Adjust for better resolution
+      },
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+
+
+    const result = response.data.data.result;
+
+    // Extract log messages only (removing timestamp)
+    const extractedLogs = result.flatMap((entry) =>
+      entry.values.map((log) => {
+        try {
+          const logData = JSON.parse(log[1]); // Convert log message to JSON
+          return logData;
+        } catch (error) {
+          console.error("Error parsing log data:", error.message);
+          return null;
+        }
+      })
+    ).filter(log => log !== null);
+
+    // Send structured logs to the frontend
+    res.json(extractedLogs);
+  } catch (error) {
+    console.error("Error fetching Nginx logs:", error.message);
+    res.status(500).send("Failed to fetch Nginx logs.");
+  }
+});
+
+
+
 
 
 // Default route

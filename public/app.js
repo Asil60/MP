@@ -248,7 +248,8 @@ function fetchAllData() {
   fetchNginxStatus();
   fetchStatusCodes();
   fetchRemoteIPData();
-  fetchModSecurityLogs()
+  fetchModSecurityLogs();
+  fetchNginxLogs();
 }
 
 // Add event listener for dropdown change
@@ -589,6 +590,7 @@ async function fetchModSecurityLogs() {
 
     // Close table structure
     tableHtml += `</tbody></table>`;
+    const now = new Date();
 
     // Insert table into the HTML
     logsContainer.innerHTML = tableHtml;
@@ -598,6 +600,88 @@ async function fetchModSecurityLogs() {
     document.getElementById("modsecurity-logs").innerHTML = "<p>Error loading logs.</p>";
   }
 }
+
+
+// Function to fetch and display Nginx logs with structured data
+async function fetchNginxLogs() {
+  try {
+    // Fetch logs from backend
+    const response = await fetch("/nginx-logs");
+    const data = await response.json();
+
+    const logsContainer = document.getElementById("nginx-logs");
+    const ngrefreshTime = document.getElementById("nginx-refresh-time");
+
+    // Check if data is available
+    if (!data || data.length === 0) {
+      logsContainer.innerHTML = "<p>No Nginx logs available.</p>";
+      refreshTime.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      return;
+    }
+
+    // Store existing rows for animation comparison
+    const existingRows = Array.from(document.querySelectorAll(".nginx-table tbody tr"));
+
+    // Create table structure
+    let tableHtml = `
+      <table class="nginx-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>⏳ Time</th>
+            <th>📍 Remote Address</th>
+            <th>📡 Status</th>
+            <th>📝 Method</th>
+            <th>🔍 Request</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    let newRows = [];
+
+    // Populate table rows
+    data.forEach((log, index) => {
+      const rowHTML = `
+        <tr class="new-row">
+          <td>${index + 1}</td>
+          <td>${log.time}</td>
+          <td>${log.remote_addr}</td>
+          <td>${log.status}</td>
+          <td>${log.method}</td>
+          <td>
+            <details>
+              <summary>View Request</summary>
+              <p>${log.request}</p>
+            </details>
+          </td>
+        </tr>
+      `;
+      newRows.push(rowHTML);
+    });
+
+    tableHtml += newRows.join("") + `</tbody></table>`;
+
+    // Insert table into the HTML
+    logsContainer.innerHTML = tableHtml;
+
+    // Remove old rows smoothly
+    existingRows.forEach((row) => {
+      row.classList.add("removing");
+      setTimeout(() => row.remove(), 500);
+    });
+
+    const now = new Date();
+    ngrefreshTime.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+  } catch (error) {
+    console.error("Error fetching Nginx logs:", error);
+    document.getElementById("nginx-logs").innerHTML = "<p>Error loading logs.</p>";
+  }
+}
+
+
+
+
 
 
 // Function to fetch Summary using OpenAI
@@ -615,7 +699,7 @@ async function fetchSummary() {
       nginxStatus: document.getElementById("nginx-status").textContent || "N/A",
     };
 
-    // Fetch Status Code Data
+    // ✅ Fetch Status Code Data
     const statusResponse = await fetch("/status-codes");
     const statusData = await statusResponse.json();
     if (statusData.length > 0) {
@@ -624,7 +708,7 @@ async function fetchSummary() {
       data.statusCodes = "No status code data available.";
     }
 
-    // Fetch Remote IP Data
+    // ✅ Fetch Remote IP Data
     const ipResponse = await fetch("/remote-ip-data");
     const ipData = await ipResponse.json();
     if (ipData.length > 0) {
@@ -633,7 +717,7 @@ async function fetchSummary() {
       data.remoteIPs = "No remote IP data available.";
     }
 
-    // Fetch request-error data
+    // ✅ Fetch Request Error Data
     const requestErrorResponse = await fetch("/requests-errors");
     const requestErrorData = await requestErrorResponse.json();
     if (requestErrorData.data && requestErrorData.data.length > 0) {
@@ -642,10 +726,37 @@ async function fetchSummary() {
       data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
     }
 
-    // Debugging: Log the data before sending
+    // ✅ Fetch ModSecurity Logs
+    const modsecResponse = await fetch("/modsecurity-data");
+    const modsecData = await modsecResponse.json();
+    if (modsecData.length > 0) {
+      data.modsecLogs = modsecData.map((log) => ({
+        ruleId: log.ruleId,
+        message: log.message,
+      }));
+    } else {
+      data.modsecLogs = [];
+    }
+
+    // ✅ Fetch Nginx Logs
+    const nginxResponse = await fetch("/nginx-logs");
+    const nginxData = await nginxResponse.json();
+    if (nginxData.length > 0) {
+      data.nginxLogs = nginxData.map((log) => ({
+        time: log.time,
+        remoteAddr: log.remote_addr,
+        status: log.status,
+        method: log.method,
+        request: log.request,
+      }));
+    } else {
+      data.nginxLogs = [];
+    }
+
+    // 🔹 Debugging: Log the data before sending
     console.log("Summary Data Sent to Backend:", JSON.stringify(data, null, 2));
 
-    // Send data to the backend for summarization
+    // ✅ Send data to the backend for summarization
     const summaryResponse = await fetch("/summarize", {
       method: "POST",
       headers: {
@@ -657,10 +768,10 @@ async function fetchSummary() {
     const result = await summaryResponse.json();
     if (!result.summary) throw new Error("No summary returned.");
 
-    // Debugging: Log the GPT-generated summary
+    // 🔹 Debugging: Log the GPT-generated summary
     console.log("GPT Summary Received:", result.summary);
 
-    // Format the summary into an ordered list
+    // ✅ Format the summary into an ordered list
     const formattedSummary = result.summary
       .split(/\d\.\s+/) // Split on "1. ", "2. ", etc.
       .filter((item) => item.trim() !== "") // Remove empty items
@@ -675,8 +786,9 @@ async function fetchSummary() {
   }
 }
 
-// Add event listener to the button
+// ✅ Add event listener to the button
 document.getElementById("generate-summary-button").addEventListener("click", fetchSummary);
+
 
 
 

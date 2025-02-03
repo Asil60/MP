@@ -242,7 +242,38 @@ body {
   align-items: center;
   text-align: center;
 }
+
+.piechart2 .card2 {
+  background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d);
+  border-radius: 15px;
+  box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  color: #fefbfb;
+  flex: 1; /* Allow it to fill the remaining space inside .piechart2 */
+  width: 100%; /* Ensure it spans the available width */
+  max-width: none; /* Remove any restrictions on max width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 10px;
+}
  
+.piechart2 .card3 {
+  background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d);
+  border-radius: 15px;
+  box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  color: #fefbfb;
+  flex: 1; /* Allow it to fill the remaining space inside .piechart2 */
+  width: 100%; /* Ensure it spans the available width */
+  max-width: none; /* Remove any restrictions on max width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 10px;
+}
 .piechart .card h1, .piechart2 .card h1 {
   font-size: 0.9rem;
   color: #ffffff;
@@ -327,6 +358,88 @@ body {
   font-weight: bold;
   color: #ff6666;
 }
+
+
+
+/*Dynamic Table For Nginx Logs*/
+
+/* Scrollable logs container */
+.logs-container1 {
+  max-height: 300px;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #444;
+  border-radius: 8px;
+  position: relative;
+}
+
+/* Table styles */
+.nginx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.nginx-table thead th {
+  background: #222;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 10px;
+  border-bottom: 2px solid #ffcc00;
+}
+
+/* Alternating row colors */
+.nginx-table tbody tr:nth-child(odd) {
+  background: #333;
+  color: #ddd;
+}
+
+.nginx-table tbody tr:nth-child(even) {
+  background: #444;
+}
+
+.nginx-table tbody tr:hover {
+  background: #555;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Newly added rows */
+.nginx-table tbody tr.new-row {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Rows that are about to be removed */
+.nginx-table tbody tr.removing {
+  animation: fadeOut 0.5s ease-in-out;
+}
+
+/* Dropdown for log details */
+.nginx-table td details {
+  background: #222;
+  color: #ccc;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.nginx-table td details summary {
+  font-weight: bold;
+  color: #ffcc00;
+}
+
 
 
 
