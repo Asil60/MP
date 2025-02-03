@@ -248,6 +248,7 @@ function fetchAllData() {
   fetchNginxStatus();
   fetchStatusCodes();
   fetchRemoteIPData();
+  fetchModSecurityLogs()
 }
 
 // Add event listener for dropdown change
@@ -529,53 +530,72 @@ function updateBarChart(labels, values, timestamps) {
     },
   });
 }
-// Function to fetch and process modsecurity data
-async function fetchModSecurityData() {
+
+
+// Function to fetch and display ModSecurity logs as a table
+async function fetchModSecurityLogs() {
   try {
-    // Fetch modsecurity data from the server
+    // Fetch modsecurity data from the backend
     const response = await fetch("/modsecurity-data");
     const data = await response.json();
 
-    // Log the raw data from the API
-    console.log("Raw ModSecurity Data:", data);
+    const logsContainer = document.getElementById("modsecurity-logs");
+    const refreshTime = document.getElementById("mod-refresh-time");
 
-    // Check if there's any data
-    if (data.length === 0) {
-      document.getElementById("modsecurity-status").innerHTML = "No relevant modsecurity data available.";
+    // Check if data is available
+    if (!data || data.length === 0) {
+      logsContainer.innerHTML = "<p>No ModSecurity logs available.</p>";
+      refreshTime.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
       return;
     }
 
-    // Process and extract necessary data (ruleId, message)
-    let modsecuritySummary = "";
-    data.forEach((entry) => {
-      // Each entry contains a JSON string in values[0][1], so we parse it
-      try {
-        const parsedData = JSON.parse(entry[0][1]); // Parse the JSON string from values[0][1]
-        
-        // Log the parsed data to inspect its structure
-        console.log("Parsed Data:", parsedData);
+    // Create table structure
+    let tableHtml = `
+      <table class="modsecurity-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>📍 Client IP</th>
+            <th>⏳ Timestamp</th>
+            <th>📝 Request</th>
+            <th>🛑 Rule ID</th>
+            <th>📢 Message</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
 
-        // Extract ruleId and message from the messages array
-        parsedData.messages.forEach((message) => {
-          const ruleId = message.details.ruleId;
-          const msg = message.details.message;
-
-          // Log extracted ruleId and message
-          console.log(`Extracted Rule ID: ${ruleId}, Message: ${msg}`);
-          
-          // Build the summary string for display
-          modsecuritySummary += `<p><strong>Rule ID:</strong> ${ruleId}, <strong>Message:</strong> ${msg}</p>`;
-        });
-      } catch (error) {
-        console.error("Error parsing data:", error);
-      }
+    // Populate table rows
+    data.forEach((log, index) => {
+      log.messages.forEach((msg, msgIndex) => {
+        tableHtml += `
+          <tr>
+            <td>${index + 1}.${msgIndex + 1}</td>
+            <td>${log.client_ip}</td>
+            <td>${log.time_stamp}</td>
+            <td>
+              <details>
+                <summary>View Request</summary>
+                <p><strong>Method:</strong> ${log.request.method}</p>
+                <p><strong>URI:</strong> ${log.request.uri}</p>
+              </details>
+            </td>
+            <td>${msg.ruleId}</td>
+            <td>${msg.message}</td>
+          </tr>
+        `;
+      });
     });
 
-    // Update the HTML with the extracted data
-    document.getElementById("modsecurity-status").innerHTML = modsecuritySummary;
+    // Close table structure
+    tableHtml += `</tbody></table>`;
+
+    // Insert table into the HTML
+    logsContainer.innerHTML = tableHtml;
+    refreshTime.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
   } catch (error) {
-    console.error("Error fetching modsecurity data:", error);
-    document.getElementById("modsecurity-status").innerHTML = "Error fetching modsecurity data.";
+    console.error("Error fetching ModSecurity logs:", error);
+    document.getElementById("modsecurity-logs").innerHTML = "<p>Error loading logs.</p>";
   }
 }
 

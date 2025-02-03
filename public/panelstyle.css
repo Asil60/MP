@@ -258,6 +258,78 @@ body {
   height: auto; /* Maintain aspect ratio */
 }
 
+/*Dynamic Table For Modsec Logs*/
+.logs-container {
+  max-height: 400px; /* Set a fixed height for the logs section */
+  overflow-y: auto; /* Enables vertical scrolling */
+  overflow-x: auto; /* Ensures horizontal scrolling if needed */
+  border: 1px solid #444; /* Optional: Adds a border for better visibility */
+  border-radius: 8px;
+}
+
+/* Table styles */
+.modsecurity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.modsecurity-table thead th {
+  background: #222;
+  color: #fff;
+  position: sticky;
+  top: 0; /* Keeps header sticky */
+  z-index: 10;
+  padding: 10px;
+  border-bottom: 2px solid #ffcc00;
+}
+
+.modsecurity-table tbody td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.modsecurity-table tbody tr:nth-child(odd) {
+  background: #333;
+  color: #ddd;
+}
+
+.modsecurity-table tbody tr:nth-child(even) {
+  background: #444;
+}
+
+.modsecurity-table tbody tr:hover {
+  background: #555;
+}
+
+/* Style the dropdown details */
+.modsecurity-table td details {
+  background: #222;
+  color: #ccc;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modsecurity-table td details summary {
+  font-weight: bold;
+  color: #ffcc00;
+}
+
+.modsecurity-table td details p {
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+/* Ensure rule IDs stand out */
+.modsecurity-table td:nth-child(5) {
+  font-weight: bold;
+  color: #ff6666;
+}
+
+
+
 
 /* Instance Status - Simple & Clean */
 #ec2-status {
