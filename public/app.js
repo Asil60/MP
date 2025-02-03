@@ -529,7 +529,55 @@ function updateBarChart(labels, values, timestamps) {
     },
   });
 }
+// Function to fetch and process modsecurity data
+async function fetchModSecurityData() {
+  try {
+    // Fetch modsecurity data from the server
+    const response = await fetch("/modsecurity-data");
+    const data = await response.json();
 
+    // Log the raw data from the API
+    console.log("Raw ModSecurity Data:", data);
+
+    // Check if there's any data
+    if (data.length === 0) {
+      document.getElementById("modsecurity-status").innerHTML = "No relevant modsecurity data available.";
+      return;
+    }
+
+    // Process and extract necessary data (ruleId, message)
+    let modsecuritySummary = "";
+    data.forEach((entry) => {
+      // Each entry contains a JSON string in values[0][1], so we parse it
+      try {
+        const parsedData = JSON.parse(entry[0][1]); // Parse the JSON string from values[0][1]
+        
+        // Log the parsed data to inspect its structure
+        console.log("Parsed Data:", parsedData);
+
+        // Extract ruleId and message from the messages array
+        parsedData.messages.forEach((message) => {
+          const ruleId = message.details.ruleId;
+          const msg = message.details.message;
+
+          // Log extracted ruleId and message
+          console.log(`Extracted Rule ID: ${ruleId}, Message: ${msg}`);
+          
+          // Build the summary string for display
+          modsecuritySummary += `<p><strong>Rule ID:</strong> ${ruleId}, <strong>Message:</strong> ${msg}</p>`;
+        });
+      } catch (error) {
+        console.error("Error parsing data:", error);
+      }
+    });
+
+    // Update the HTML with the extracted data
+    document.getElementById("modsecurity-status").innerHTML = modsecuritySummary;
+  } catch (error) {
+    console.error("Error fetching modsecurity data:", error);
+    document.getElementById("modsecurity-status").innerHTML = "Error fetching modsecurity data.";
+  }
+}
 
 
 // Function to fetch Summary using OpenAI

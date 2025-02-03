@@ -302,15 +302,6 @@ app.get("/remote-ip-data", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
 // OpenAI summary endpoint
 app.post("/summarize", async (req, res) => {
   try {
@@ -595,6 +586,112 @@ app.get("/requests-errors-range", async (req, res) => {
   } catch (error) {
     console.error("❌ Error fetching requests/errors data for range:", error.message);
     res.status(500).json({ success: false, error: "Failed to fetch requests/errors data for range." });
+  }
+});
+
+
+app.get("/modsecurity-data", async (req, res) => {
+  try {
+    const start = Math.floor(Date.now() / 1000) - 3600; // Start time (last 1 hour)
+    const end = Math.floor(Date.now() / 1000); // End time (current time)
+ 
+    const query = `{job="modsecurity"}`; // Your query
+ 
+    const response = await axios.get(`http://13.251.167.13:3000/api/datasources/proxy/9/loki/api/v1/query_range`, {
+      params: {
+        query,
+        start,
+        end,
+        step: 10,
+      },
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+ 
+    // Log the raw response data for debugging
+    console.log("API Response:", JSON.stringify(response.data.data.result, null, 2));
+ 
+    // Process and filter the data
+    const result = response.data.data.result;
+ 
+    const extractedData = result.map((entry) => {
+      if (entry.values?.[0]) {
+        try {
+          const rawJson = entry.values[0][1]; // Assuming this is the stringified JSON
+          console.log("Raw JSON:", rawJson); // Debug log to check the raw JSON string
+ 
+          const parsedData = JSON.parse(rawJson); // Parsing the JSON string from values[0][1]
+          console.log("Parsed Data:", parsedData); // Log parsed data for debugging
+ 
+          // Destructure and extract only the relevant fields
+          const {
+            transaction: {
+              client_ip = "Unknown IP",
+              time_stamp = "Unknown Timestamp",
+              request = {},
+              response = {},
+              messages = [],
+            },
+            producer: {
+              modsecurity = "Unknown version",
+              connector = "Unknown connector",
+            } = {},
+          } = parsedData;
+ 
+          // Handle missing request or response details and set defaults
+          const { method = "Unknown Method", uri = "Unknown URI" } = request;
+          const { http_code = "Unknown HTTP Code", body = "Unknown Body" } = response;
+ 
+          // Log to verify extracted fields
+          console.log("Extracted request:", method, uri);
+          console.log("Extracted response:", http_code, body);
+ 
+          // Extract the ruleId and message from the messages array using the correct path
+          const messageData = messages.map((message, index) => {
+            // Extract message and ruleId from the structure
+            const ruleId = message?.details?.ruleId || "Unknown Rule ID"; // ruleId is inside details
+            const messageText = message?.message || "No message"; // message is directly inside the message object
+ 
+            console.log(`Message ${index}: ruleId - ${ruleId}, message - ${messageText}`); // Log each message
+ 
+            return {
+              ruleId,
+              message: messageText,
+            };
+          });
+ 
+          // Return the structured data
+          return {
+            client_ip,
+            time_stamp,
+            request: {
+              method,
+              uri,
+            },
+            response: {
+              http_code,
+              body,
+            },
+            modsecurity: {
+              version: modsecurity,
+              connector: connector,
+            },
+            messages: messageData,
+          };
+        } catch (err) {
+          console.error("Error parsing JSON:", err.message);
+          return null; // Skip this entry if JSON parsing fails
+        }
+      }
+      return null; // Return null if there's no valid data
+    }).filter((item) => item !== null); // Remove any null values
+ 
+    // Return the extracted data to the frontend
+    res.json(extractedData);
+  } catch (error) {
+    console.error("Error fetching modsecurity data:", error.message);
+    res.status(500).send("Failed to fetch modsecurity data.");
   }
 });
 

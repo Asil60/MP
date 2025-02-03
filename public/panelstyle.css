@@ -213,7 +213,7 @@ body {
   box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
   padding: 15px;
   color: #fefbfb;
-  max-width: 450px; /* Fixed size for the first chart */
+  max-width: 250px; /* Fixed size for the first chart */
   flex: 0 0 450px; /* Prevent it from growing or shrinking */
   display: flex;
   flex-direction: column;
@@ -394,7 +394,7 @@ input:checked + .slider:before {
   flex-direction: column;
   gap: 20px;
   min-width: 0;
-  height: 815px;
+  
 }
  
 .summary-section h1 {
@@ -405,7 +405,7 @@ input:checked + .slider:before {
 .summary-section .value {
   font-size: 0.95rem;
   padding: 20px;
-  height: 300px;
+  height: 600px;
   background-color: #000000;
   color: #bbb;
   border-radius: 8px;
