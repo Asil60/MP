@@ -589,7 +589,7 @@ app.get("/requests-errors-range", async (req, res) => {
   }
 });
 
-
+//new
 app.get("/modsecurity-data", async (req, res) => {
   try {
     const start = Math.floor(Date.now() / 1000) - 3600; // Start time (last 1 hour)
