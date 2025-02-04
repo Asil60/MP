@@ -8,14 +8,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="login.js"></script>
   <script src="./ec2.js"></script>
-
+ 
 </head>
 <body>
  
@@ -36,11 +36,11 @@
     <a href="./serverC.html" class="sidenav-link">
       <span class="icon">🖥️</span> <span class="text">Server C</span>
     </a>
-    <a href="#" class="sidenav-link">
-      <span class="icon">📜</span> <span class="text">Logs</span>
+    <a href="./alerts.html" class="sidenav-link">
+      <span class="icon">📜</span> <span class="text">Alerts</span>
     </a>
     <a id="downloadPDF" class="sidenav-link">
-      <span class="icon"><i class="fas fa-download"></i></span> 
+      <span class="icon"><i class="fas fa-download"></i></span>
       <span class="text">Download Report</span>
     </a>
     <div class ="Account">
@@ -137,9 +137,9 @@
         </div>
       </div>            
   </div>
-
+ 
 <!-- Summary Section -->
-<div class="summary-section">
+<div class="summary-section" id="summary-section">
   <div class="section-container">
     <!-- Timeframe Dropdown -->
     <div class="dropdown-container">
@@ -155,26 +155,30 @@
         <option value="604800">7 Days</option>
       </select>
     </div>
-  <h1>Summary</h1>
-  <div class="value" id="summary">
+    <h1>Summary</h1>
+    <div class="value" id="summary">
       Click the button below to generate a summary.
-  </div>
-  <!-- GPT Input Section -->
-  <div class="gpt-input-section">
+    </div>
+    <!-- GPT Input Section -->
+    <div class="gpt-input-section">
       <h2>Ask GPT</h2>
       <textarea
           id="gpt-input"
           placeholder="Type your question here and press Enter..."></textarea>
+    </div>
+    <button id="generate-summary-button">Generate Summary</button>
   </div>
-  <button id="generate-summary-button">Generate Summary</button>
 </div>
-</div>
+ 
+<!-- Toggle Button -->
+<button id="toggle-summary-button" class="toggle-summary-button">Toggle Summary</button>
+ 
 </div>
 <script src="app.js"></script>
 <script src="./askgpt.js"></script>
 <script src="./logout.js"></script>
 <script src="./report.js"></script>
-
+ 
 <script>
   // Fetch the family name after the panel page loads
   document.addEventListener("DOMContentLoaded", () => {
@@ -287,6 +291,24 @@ document.getElementById("ec2-toggle").addEventListener("change", toggleEC2State)
 // Fetch the status on page load
 document.addEventListener("DOMContentLoaded", () => {
     fetchEC2Status();
+});
+ 
+</script>
+ 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+  const summarySection = document.getElementById("summary-section");
+  const toggleButton = document.getElementById("toggle-summary-button");
+ 
+  toggleButton.addEventListener("click", () => {
+    if (summarySection.classList.contains("visible")) {
+      // Hide the summary section
+      summarySection.classList.remove("visible");
+    } else {
+      // Show the summary section
+      summarySection.classList.add("visible");
+    }
+  });
 });
  
 </script>

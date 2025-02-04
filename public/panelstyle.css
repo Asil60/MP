@@ -13,30 +13,32 @@ body {
  
 /* Layout Container */
 .layout-container {
-  display: grid;
-  grid-template-columns: 250px 4fr 1.5fr; /* Sidebar, Main Content, Summary */
-  height: 100vh;
-  gap: 20px;
-  box-sizing: border-box;
+  display: flex;
   width: 100%;
-  transition: all 0.3s ease;
+  height: 100%;
 }
  
 /* Sidebar */
 .sidenav {
+  position: fixed; /* Fixed position to stay on the side */
+  left: 0;
+  top: 0;
   background-color: #181830; /* Dark purple-blue background */
   color: #b0b3c5; /* Light gray text */
   padding: 20px;
-  height: 100%;
-  width: 250px;
+  height: 100vh; /* Full height */
+  width: 250px; /* Fixed width */
   box-sizing: border-box;
+  overflow-y: auto; /* Allow scrolling if content overflows */
 }
  
+/* Sidebar Header */
 .sidenav h2 {
   font-size: 1.2rem;
   margin-bottom: 20px;
 }
  
+/* Sidebar Links */
 .sidenav .sidenav-link {
   display: flex;
   align-items: center;
@@ -49,7 +51,8 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
  
-.sidenav-link1  {
+/* Alternative Link Style */
+.sidenav-link1 {
   display: flex;
   cursor: pointer;
   align-items: center;
@@ -62,33 +65,40 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
  
- 
+/* Active Sidebar Link */
 .sidenav .sidenav-link.active {
   background-color: #6842ff; /* Highlighted active state */
   color: #fff;
-  font-weight: b;
+  font-weight: bold;
 }
  
+/* Hover Effect */
 .sidenav .sidenav-link:hover {
   background-color: #3b3b5c;
   color: #fff;
 }
  
+/* Sidebar Icons */
 .sidenav .sidenav-link .icon {
   margin-right: 10px;
   font-size: 1.2rem;
 }
-.Account{
+ 
+/* Account Section */
+.Account {
   margin-bottom: 10%;
 }
  
+ 
 /* Main Content */
 .main-content {
+  margin-left: 250px; /* Same as the sidebar width */
   padding: 20px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   min-width: 0; /* Ensure it doesn't overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
  
 .card-grid {
@@ -242,7 +252,7 @@ body {
   align-items: center;
   text-align: center;
 }
-
+ 
 .piechart2 .card2 {
   background: linear-gradient(145deg, #0000006f 75%, #0b0707b2 95%, #0e08086d);
   border-radius: 15px;
@@ -288,7 +298,7 @@ body {
   width: 100%; /* Make canvas fill the card */
   height: auto; /* Maintain aspect ratio */
 }
-
+ 
 /*Dynamic Table For Modsec Logs*/
 .logs-container {
   max-height: 400px; /* Set a fixed height for the logs section */
@@ -297,14 +307,14 @@ body {
   border: 1px solid #444; /* Optional: Adds a border for better visibility */
   border-radius: 8px;
 }
-
+ 
 /* Table styles */
 .modsecurity-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
-
+ 
 .modsecurity-table thead th {
   background: #222;
   color: #fff;
@@ -314,26 +324,26 @@ body {
   padding: 10px;
   border-bottom: 2px solid #ffcc00;
 }
-
+ 
 .modsecurity-table tbody td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
 }
-
+ 
 .modsecurity-table tbody tr:nth-child(odd) {
   background: #333;
   color: #ddd;
 }
-
+ 
 .modsecurity-table tbody tr:nth-child(even) {
   background: #444;
 }
-
+ 
 .modsecurity-table tbody tr:hover {
   background: #555;
 }
-
+ 
 /* Style the dropdown details */
 .modsecurity-table td details {
   background: #222;
@@ -342,27 +352,27 @@ body {
   border-radius: 5px;
   cursor: pointer;
 }
-
+ 
 .modsecurity-table td details summary {
   font-weight: bold;
   color: #ffcc00;
 }
-
+ 
 .modsecurity-table td details p {
   margin: 5px 0;
   font-size: 13px;
 }
-
+ 
 /* Ensure rule IDs stand out */
 .modsecurity-table td:nth-child(5) {
   font-weight: bold;
   color: #ff6666;
 }
-
-
-
+ 
+ 
+ 
 /*Dynamic Table For Nginx Logs*/
-
+ 
 /* Scrollable logs container */
 .logs-container1 {
   max-height: 300px;
@@ -373,14 +383,14 @@ body {
   border-radius: 8px;
   position: relative;
 }
-
+ 
 /* Table styles */
 .nginx-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
-
+ 
 .nginx-table thead th {
   background: #222;
   color: #fff;
@@ -390,42 +400,42 @@ body {
   padding: 10px;
   border-bottom: 2px solid #ffcc00;
 }
-
+ 
 /* Alternating row colors */
 .nginx-table tbody tr:nth-child(odd) {
   background: #333;
   color: #ddd;
 }
-
+ 
 .nginx-table tbody tr:nth-child(even) {
   background: #444;
 }
-
+ 
 .nginx-table tbody tr:hover {
   background: #555;
 }
-
+ 
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
+ 
 @keyframes fadeOut {
   from { opacity: 1; transform: translateY(0); }
   to { opacity: 0; transform: translateY(-10px); }
 }
-
+ 
 /* Newly added rows */
 .nginx-table tbody tr.new-row {
   animation: fadeIn 0.5s ease-in-out;
 }
-
+ 
 /* Rows that are about to be removed */
 .nginx-table tbody tr.removing {
   animation: fadeOut 0.5s ease-in-out;
 }
-
+ 
 /* Dropdown for log details */
 .nginx-table td details {
   background: #222;
@@ -434,16 +444,16 @@ body {
   border-radius: 5px;
   cursor: pointer;
 }
-
+ 
 .nginx-table td details summary {
   font-weight: bold;
   color: #ffcc00;
 }
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
 /* Instance Status - Simple & Clean */
 #ec2-status {
   font-size: 0.85rem; /* Compact text size */
@@ -529,12 +539,11 @@ input:checked + .slider:before {
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(253, 253, 253, 0.769); /* Subtle shadow */
   text-align: center;
-  margin: -10px; /* Smaller spacing */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px; /* Reduced gap between label and select */
-  margin-bottom: 30px; /* Smaller spacing */
+  margin-bottom: 10px; /* Smaller spacing */
 }
  
 /* Label Styling - Smaller Font */
@@ -546,16 +555,16 @@ input:checked + .slider:before {
  
 /* Dropdown Styling - Compact Design */
 .dropdown-container select {
-  padding: 6px; /* Smaller padding */
-  font-size: 14px; /* Smaller font size */
-  background-color: #333333; /* Dark dropdown */
-  color: #ffffff; /* Light text */
-  border: 1px solid #555555; /* Subtle border */
+  padding: 6px;
+  font-size: 14px;
+  background-color: #333333;
+  color: #ffffff;
+  border: 1px solid #555555;
   border-radius: 4px;
   cursor: pointer;
   outline: none;
   transition: border-color 0.3s, background-color 0.3s;
-  width: 100px; /* Smaller width */
+  width: 100px;
 }
  
 /* Hover and Focus Effects for Select */
@@ -565,47 +574,60 @@ input:checked + .slider:before {
   background-color: #444444;
 }
  
-/* Summary Section */
+/* Summary Section - Smaller & Toggles Vertically */
 .summary-section {
-  background: linear-gradient(145deg, #1e1e2e, #2f2f4f); /* Matching the cards */
+  position: fixed;
+  bottom: 0;
+  left: 85%;
+  transform: translateX(-50%) translateY(100%);
+  width: 90%; /* Adjust width for better responsiveness */
+  max-width: 400px; /* Smaller, more compact */
+  height: 630px; /* Smaller height */
+  background: linear-gradient(145deg, #1e1e2e, #2f2f4f);
   color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  border-radius: 10px;
-  padding: 20px;
-  margin: 20px;
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.5);
+  border-radius: 10px 10px 0 0;
+  padding: 15px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(78, 78, 78, 0.414);
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  min-width: 0;
-  
+  gap: 10px;
+  transition: transform 0.4s ease-in-out;
+  z-index: 999;
+  opacity: 1;
 }
  
+/* Visible State - Slides Up */
+.summary-section.visible {
+  transform: translateX(-50%) translateY(0);
+}
+ 
+/* Smaller Title */
 .summary-section h1 {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   color: #e0e0e0;
 }
  
+/* Content Box - Compact and Scrollable */
 .summary-section .value {
-  font-size: 0.95rem;
-  padding: 20px;
-  height: 600px;
+  font-size: 0.85rem;
+  padding: 10px;
+  height: 150px; /* Smaller height */
   background-color: #000000;
   color: #bbb;
-  border-radius: 8px;
-  line-height: 1.6;
+  border-radius: 6px;
+  line-height: 1.5;
   text-align: justify;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
  
 /* Graph Container */
 .graph-container {
   width: 100%;
-  overflow-x: auto; /* Enables horizontal scrolling for graphs */
-  background: linear-gradient(145deg, #1e1e2e, #91bd1a); /* Consistent with the theme */
+  overflow-x: auto;
+  background: linear-gradient(145deg, #1e1e2e, #91bd1a);
   border-radius: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
@@ -623,9 +645,9 @@ input:checked + .slider:before {
   gap: 15px;
   margin-top: 20px;
   padding: 20px;
-  background: linear-gradient(145deg, #1f1f2e, #282a36); /* Subtle dark gradient */
-  border-radius: 6px; /* Keep existing size */
-  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5), -3px -3px 6px rgba(255, 255, 255, 0.05); /* Light neumorphic effect */
+  background: linear-gradient(145deg, #1f1f2e, #282a36);
+  border-radius: 6px;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5), -3px -3px 6px rgba(255, 255, 255, 0.05);
 }
  
 /* Input Box */
@@ -633,83 +655,190 @@ input:checked + .slider:before {
   width: 100%;
   border: 1px solid #444;
   border-radius: 6px;
-  background-color: #1e1e2e; /* Darker background for input */
-  color: #e0e0e0; /* Bright text */
+  background-color: #1e1e2e;
+  color: #e0e0e0;
   font-size: 1rem;
   padding: 15px;
-  min-height: 120px;
+  min-height: 100px;
   resize: none;
-  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(255, 255, 255, 0.03); /* Subtle inner shadow */
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(255, 255, 255, 0.03);
   box-sizing: border-box;
 }
  
 #gpt-input:focus {
   outline: none;
-  border: 1px solid #6842ff; /* Highlighted purple border on focus */
-  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(104, 66, 255, 0.3); /* Slight focus glow */
+  border: 1px solid #6842ff;
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(104, 66, 255, 0.3);
 }
  
 #gpt-input::placeholder {
-  color: #888; /* Placeholder color adjustment */
+  color: #888;
 }
  
 /* Button Styling */
 #generate-summary-button {
-  padding: 15px 20px;
-  font-size: 1.2rem;
-  background: linear-gradient(145deg, #6842ff, #4e30cc); /* Vibrant purple gradient */
+  padding: 12px 18px;
+  font-size: 1rem;
+  background: linear-gradient(145deg, #6842ff, #4e30cc);
   color: #fff;
   border: none;
-  border-radius: 6px; /* Retain existing size */
-  margin-top: 20px;
+  border-radius: 6px;
+  margin-top: 15px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), -2px -2px 4px rgba(255, 255, 255, 0.05); /* Light 3D shadow */
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), -2px -2px 4px rgba(255, 255, 255, 0.05);
 }
  
 #generate-summary-button:hover {
-  background: linear-gradient(145deg, #5533cc, #3e24a3); /* Darker gradient on hover */
-  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7), -3px -3px 6px rgba(255, 255, 255, 0.05); /* Enhanced shadow on hover */
+  background: linear-gradient(145deg, #5533cc, #3e24a3);
 }
  
 #generate-summary-button:active {
-  background: linear-gradient(145deg, #4e30cc, #6842ff); /* Reverse gradient on click */
-  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(255, 255, 255, 0.1); /* Pressed effect */
+  background: linear-gradient(145deg, #4e30cc, #6842ff);
+}
+ 
+/* Toggle Button */
+.toggle-summary-button {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  padding: 10px 15px;
+  font-size: 0.9rem;
+  background: linear-gradient(145deg, #6842ff, #4e30cc);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+ 
+.toggle-summary-button:hover {
+  background: linear-gradient(145deg, #5533cc, #3e24a3);
+}
+ 
+.toggle-summary-button:active {
+  background: linear-gradient(145deg, #4e30cc, #6842ff);
 }
  
  
-/* Responsive Adjustments */
-@media (max-width: 1300px) {
+/* General Responsive Adjustments */
+@media screen and (max-width: 1024px) {
   .layout-container {
-    grid-template-columns: 1fr; /* Single column layout */
-    grid-template-rows: auto 1fr; /* Sidebar moves to top */
+    flex-direction: column; /* Stack sidebar and content vertically */
+  }
+ 
+   /* Sidebar moves to top and becomes a column */
+   .sidenav {
+    position: relative;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column; /* Stack sidebar items vertically */
+    background-color: #181830;
+    gap: 10px; /* Add space between items */
+    margin-bottom: 10px; /* Add space between sidebar and content */
+  }
+ 
+  /* Sidebar links align vertically */
+  .sidenav .sidenav-link {
+    padding: 10px;
+    margin: 5px;
+    text-align: center;
+    font-size: 1rem;
+    width: 100%; /* Ensure full width */
+  }
+ 
+ 
+  /* Main content takes full width */
+  .main-content {
+    margin-left: 0;
+    padding: 15px;
+    flex: 1;
+  }
+}
+ 
+@media screen and (max-width: 768px) {
+  /* Sidebar becomes a top navbar */
+  .layout-container {
+    flex-direction: column; /* Stack sidebar and content vertically */
   }
  
   .sidenav {
-    height: auto;
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr;
+    padding: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
     gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid #333;
-    background-color: #1f1f1f;
   }
  
-  .sidenav h2 {
-    display: none;
-  }
- 
+  /* Sidebar links smaller and vertically aligned */
   .sidenav .sidenav-link {
-    margin: 0;
-    padding: 10px 15px;
-    border-radius: 5px;
+    font-size: 0.9rem;
+    padding: 8px;
+    margin: 5px 0;
     text-align: center;
-    white-space: nowrap;
+    width: 100%; /* Ensure they take full width */
+  }
+ 
+  /* Stack the content and GPT section */
+  .main-content,
+  .gpt-input-section {
     width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+  }
+ 
+  /* Cards grid adjusts */
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+  }
+ 
+  /* Piecharts stack vertically */
+  .piechart {
+    flex-direction: column;
+    gap: 10px;
+  }
+ 
+  /* GPT Input Section Adjusts */
+  .gpt-input-section {
+    padding: 10px;
+  }
+}
+ 
+@media screen and (max-width: 480px) {
+  /* Sidebar links collapse to smaller buttons/icons */
+  .sidenav .sidenav-link {
+    font-size: 0.8rem;
+    padding: 5px;
+    margin: 2px;
+  }
+ 
+  /* Main content and GPT adjust */
+  .main-content {
+    margin: 0;
+    padding: 10px;
   }
  
   .gpt-input-section {
-    margin-top: 20px;
+    min-width: 100%;
+    margin: 10px auto;
+    padding: 8px;
   }
+ 
+  /* Summary Section Shrinks */
+  .summary-section {
+    width: 100%;
+    max-width: 300px;
+    height: 400px;
+    padding: 10px;
+  }
+}
+ 
+/* Smooth Transitions */
+* {
+  transition: all 0.3s ease-in-out;
 }

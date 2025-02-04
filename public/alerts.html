@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumiere Proxy Dashboard</title>
+  <link rel="stylesheet" href="./alertstyle.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="login.js"></script>
+  <script src="./ec2.js"></script>
+ 
+</head>
+<body>
+ <!-- Main Layout -->
+<div class="layout-container">
+  <!-- Sidebar -->
+  <div class="sidenav">
+    <h2 class="titles">System Dashboard</h2>
+    <a href="./panel.html" class="sidenav-link">
+      <span class="icon">ℹ</span> <span class="text">System Information</span>
+    </a>
+    <a href="./serverA.html" class="sidenav-link">
+      <span class="icon">🖥</span> <span class="text">Server A</span>
+    </a>
+    <a href="./serverB.html" class="sidenav-link">
+      <span class="icon">🖥</span> <span class="text">Server B</span>
+    </a>
+    <a href="./serverC.html" class="sidenav-link">
+      <span class="icon">🖥</span> <span class="text">Server C</span>
+    </a>
+    <a href="#" class="sidenav-link active">
+      <span class="icon">📜</span> <span class="text">Alerts</span>
+    </a>
+    <a id="downloadPDF" class="sidenav-link">
+      <span class="icon"><i class="fas fa-download"></i></span>
+      <span class="text">Download Report</span>
+    </a>
+    <div class ="Account">
+      <p><ul><b>Account Page</b></ul></p>
+      <a class="sidenav-link">
+        <span class="text" id="family-name-display">Loading...</span>
+      </a>
+      <a class="sidenav-link1">
+        <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;&nbsp;
+        <span class="text" id="logoutButton">Sign Out </span>
+       
+      </a>
+    </div>
+  </div>
+ 
+  <!-- Main Content -->
+<!-- Main Content -->
+<div class="main-content">
+    <div class="card-grid">
+        <div id="alert-container">
+            <h2>⚠ Real-Time Security Alerts</h2>
+            <div id="alert-box"></div>
+          </div>
+    </div>
+ 
+ 
+<!-- Summary Section -->
+<div class="summary-section">
+  <div class="section-container">
+    <!-- Timeframe Dropdown -->
+    <div class="dropdown-container">
+      <label for="timeframe">Select Timeframe:</label>
+      <select id="timeframe">
+        <option value="live" selected>Live</option>
+        <option value="3600">1 Hour</option>
+        <option value="7200">2 Hours</option>
+        <option value="18000">5 Hours</option>
+        <option value="36000">10 Hours</option>
+        <option value="86400">1 Day</option>
+        <option value="432000">5 Days</option>
+        <option value="604800">7 Days</option>
+      </select>
+    </div>
+  
+  <!-- GPT Input Section -->
+  
+  <button id="generate-summary-button">Generate Summary</button>
+</div>
+</div>
+</div>
+
+<script src="./app.js"></script>
+<script src="./askgpt.js"></script>
+<script src="./logout.js"></script>
+<script src="./report.js"></script>
+<script src="./alerts.js"></script>
+</body>
+ 
+</html>

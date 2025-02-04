@@ -250,6 +250,7 @@ function fetchAllData() {
   fetchRemoteIPData();
   fetchModSecurityLogs();
   fetchNginxLogs();
+  fetchModSecurityAlerts();
 }
 
 // Add event listener for dropdown change
@@ -680,6 +681,54 @@ async function fetchNginxLogs() {
 }
 
 
+// Function to fetch ModSecurity Alerts
+async function fetchModSecurityAlerts() {
+  try {
+    const response = await fetch("/modsecurity-attacks"); // Update API URL if needed
+    const data = await response.json();
+ 
+    if (!data || data.length === 0) {
+      console.warn("⚠️ No ModSecurity attack logs available.");
+      document.getElementById("alert-box").innerHTML = "<p>No security threats detected.</p>";
+      return;
+    }
+ 
+    const alertBox = document.getElementById("alert-box");
+    if (!alertBox) {
+      console.error("❌ Error: 'alert-box' not found in the DOM!");
+      return;
+    }
+ 
+    alertBox.innerHTML = ""; // Clear previous alerts
+ 
+    data.forEach(alert => {
+      const div = document.createElement("div");
+      div.className = "alert";
+      div.innerHTML = `<strong>⚠️ ALERT:</strong> Possible SQL Injection detected!<br>
+        🕒 <strong>Time:</strong> ${alert.transaction.time_stamp}<br>
+        📌 <strong>IP:</strong> ${alert.transaction.client_ip}<br>
+        🔗 <strong>URI:</strong> ${alert.transaction.request.uri}<br>
+        📝 <strong>Message:</strong> ${alert.transaction.messages[0]?.message || "Unknown alert"}`;
+ 
+      alertBox.prepend(div);
+    });
+  } catch (error) {
+    console.error("❌ Error fetching ModSecurity alerts:", error);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -726,17 +775,21 @@ async function fetchSummary() {
       data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
     }
 
-    // ✅ Fetch ModSecurity Logs
+            // ✅ Fetch ModSecurity Logs
     const modsecResponse = await fetch("/modsecurity-data");
     const modsecData = await modsecResponse.json();
+
     if (modsecData.length > 0) {
       data.modsecLogs = modsecData.map((log) => ({
-        ruleId: log.ruleId,
-        message: log.message,
+        ruleId: log.messages?.[0]?.ruleId || "Unknown",
+        message: log.messages?.[0]?.message || "No message available",
       }));
     } else {
       data.modsecLogs = [];
     }
+
+
+
 
     // ✅ Fetch Nginx Logs
     const nginxResponse = await fetch("/nginx-logs");

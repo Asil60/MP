@@ -302,7 +302,7 @@ app.get("/remote-ip-data", async (req, res) => {
   }
 });
 
-// ✅ OpenAI Summary Endpoint (Now Includes Nginx Logs)
+// OpenAI Summary Endpoint (Now Includes Nginx Logs)
 app.post("/summarize", async (req, res) => {
   try {
     const { data } = req.body;
@@ -390,7 +390,6 @@ ${nginxLogSummary}
 app.post("/ask-gpt", async (req, res) => {
   try {
     const { question, data } = req.body;
-    // Log received data for debugging
     console.log("Received Data for GPT:", data);
 
     // Format request-error data
@@ -410,8 +409,43 @@ app.post("/ask-gpt", async (req, res) => {
       `;
     }
 
-    // Log formatted summary for debugging
     console.log("Request-Errors Summary for GPT:", requestErrorsSummary);
+
+
+   
+
+
+    // Format ModSecurity logs
+    let modsecLogsSummary = "No ModSecurity logs available.";
+    if (data.modsecLogs && data.modsecLogs.length > 0) {
+      modsecLogsSummary = data.modsecLogs
+        .map((log, index) => `  ${index + 1}. Rule ID: ${log.ruleId} - ${log.message}`)
+        .join("\n");
+    }
+
+    console.log("ModSecurity Logs Summary for GPT:", modsecLogsSummary);
+
+
+
+    // Format Nginx logs
+    let nginxLogsSummary = "No Nginx logs available.";
+    if (data.nginxLogs && data.nginxLogs.length > 0) {
+      nginxLogsSummary = data.nginxLogs
+        .map((log, index) => `  ${index + 1}. ${log.logEntry}`)
+        .join("\n");
+    }
+
+    console.log("Nginx Logs Summary for GPT:", nginxLogsSummary);
+
+
+    // Format Status Codes
+    let statusCodesSummary = "No status code data available.";
+    if (data.statusCodes && data.statusCodes.length > 0) {
+      statusCodesSummary = data.statusCodes
+        .map((code) => `  Status ${code.status}: ${code.value} requests`)
+        .join("\n");
+    }
+
 
     // Construct GPT prompt
     const prompt = `
@@ -423,15 +457,24 @@ app.post("/ask-gpt", async (req, res) => {
     - Request Errors Summary:
       ${requestErrorsSummary}
 
+    - ModSecurity Logs:
+      ${modsecLogsSummary}
+
+    - Nginx Access Logs:
+      ${nginxLogsSummary}
+
+      - Status Codes:
+      ${statusCodesSummary}
+
     User's Question: "${question}"
 
-    Provide a detailed and helpful response about the system, focusing on the request-error trends if applicable.
+    Provide a detailed and helpful response based on the logs and system performance. If the question relates to security, analyze ModSecurity logs to provide insights into security threats.
     `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 300,
+      max_tokens: 400,
       temperature: 0.7,
     });
 
@@ -442,6 +485,7 @@ app.post("/ask-gpt", async (req, res) => {
     res.status(500).json({ error: "Failed to process query." });
   }
 });
+
 
 app.get("/cpu-usage-range", async (req, res) => {
   const { start } = req.query;
@@ -665,6 +709,72 @@ app.get("/modsecurity-data", async (req, res) => {
     res.status(500).send("Failed to fetch modsecurity data.");
   }
 });
+
+
+ 
+// Endpoint to fetch ModSecurity attack logs for the past 1 hour
+app.get("/modsecurity-attacks", async (req, res) => {
+  try {
+    const start = Math.floor(Date.now() / 1000) - 3600; // Start time (1 hour ago)
+    const end = Math.floor(Date.now() / 1000); // Current time
+ 
+    const query = `{job="modsecurity"} |~ "union select|select.*from|drop table|--"`; // Loki query for SQLi attack patterns
+ 
+    const response = await axios.get(LOKI_API_URL, {
+      params: {
+        query,
+        start,
+        end,
+        step: 10, // Adjust for better resolution
+      },
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+    });
+ 
+    const result = response.data.data.result;
+ 
+    // Extract attack logs only (removing timestamp)
+    const extractedAttacks = result.flatMap((entry) =>
+      entry.values.map((log) => {
+        try {
+          const attackData = JSON.parse(log[1]); // Convert log message to JSON
+          return attackData;
+        } catch (error) {
+          console.error("Error parsing attack log data:", error.message);
+          return null;
+        }
+      })
+    ).filter(log => log !== null);
+ 
+    // Send structured attack logs to the frontend
+    res.json(extractedAttacks);
+  } catch (error) {
+    console.error("Error fetching ModSecurity attack logs:", error.message);
+    res.status(500).send("Failed to fetch ModSecurity attack logs.");
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

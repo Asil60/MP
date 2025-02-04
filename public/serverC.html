@@ -8,14 +8,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="login.js"></script>
   <script src="./ec2.js"></script>
-
+ 
 </head>
 <body>
  
@@ -24,23 +24,23 @@
   <!-- Sidebar -->
   <div class="sidenav">
     <h2 class="titles">System Dashboard</h2>
-    <a href="./panel.html" class="sidenav-link">
-      <span class="icon">ℹ</span> <span class="text">System Information</span>
+    <a href="./panel.html" class="sidenav-link ">
+      <span class="icon">ℹ️</span> <span class="text">System Information</span>
     </a>
-    <a href="./serverA.html" class="sidenav-link">
-      <span class="icon">🖥</span> <span class="text">Server A</span>
+    <a href="./serverA.html" class="sidenav-link ">
+      <span class="icon">🖥️</span> <span class="text">Server A</span>
     </a>
     <a href="./serverB.html" class="sidenav-link">
-      <span class="icon">🖥</span> <span class="text">Server B</span>
+      <span class="icon">🖥️</span> <span class="text">Server B</span>
     </a>
     <a href="#" class="sidenav-link active">
-      <span class="icon">🖥</span> <span class="text">Server C</span>
+      <span class="icon">🖥️</span> <span class="text">Server C</span>
     </a>
-    <a href="#" class="sidenav-link">
-      <span class="icon">📜</span> <span class="text">Logs</span>
+    <a href="./alerts.html" class="sidenav-link">
+      <span class="icon">📜</span> <span class="text">Alerts</span>
     </a>
     <a id="downloadPDF" class="sidenav-link">
-      <span class="icon"><i class="fas fa-download"></i></span> 
+      <span class="icon"><i class="fas fa-download"></i></span>
       <span class="text">Download Report</span>
     </a>
     <div class ="Account">
@@ -73,28 +73,28 @@
     </div>
     <div class="card">
       <h1>Nginx Status</h1>
-      <div class="value" id="nginx-statusA">ON</div>
+      <div class="value" id="nginx-statusC">ON</div>
       <div class="refresh-timeC" id="nginx-refresh-timeC">Last updated at 8:28:45 PM</div>
     </div>
    
       <div class="card">
         <h1>Current CPU Usage</h1>
-        <div class="value" id="cpu-usageA">1.9%</div>
+        <div class="value" id="cpu-usageC">1.9%</div>
         <div class="refresh-timeC" id="cpu-refresh-timeC">Last updated at 8:28:45 PM</div>
       </div>
       <div class="card">
         <h1>Current RAM Usage</h1>
-        <div class="value" id="ram-usageA">63.2%</div>
+        <div class="value" id="ram-usageC">63.2%</div>
         <div class="refresh-timeC" id="ram-refresh-timeC">Last updated at 8:28:45 PM</div>
       </div>
       <div class="card">
         <h1>Root FS Used</h1>
-        <div class="value" id="root-fs-usageA">91.0%</div>
+        <div class="value" id="root-fs-usageC">91.0%</div>
         <div class="refresh-timeC" id="root-fs-refresh-timeC">Last updated at 8:28:45 PM</div>
       </div>
       <div class="card">
         <h1>Server Uptime</h1>
-        <div class="value" id="server-uptimeA">98.5 hours</div>
+        <div class="value" id="server-uptimeC">98.5 hours</div>
         <div class="refresh-timeC" id="uptime-refresh-timeC">Last updated at 8:28:45 PM</div>
       </div>
     </div>
@@ -104,7 +104,7 @@
         <canvas id="requestsErrorsChart"></canvas>
       </div>
     </div>
-
+     
         <div class="piechart2">
           <div class="card">
             <h1>Remote IP Address Request to Website</h1>
@@ -112,12 +112,12 @@
             <small id="ip-refresh-timeC">Loading...</small>
           </div>
         </div>
-      
-              
+     
+           
   </div>
-
+ 
 <!-- Summary Section -->
-<div class="summary-section">
+<div class="summary-section" id="summary-section">
   <div class="section-container">
     <!-- Timeframe Dropdown -->
     <div class="dropdown-container">
@@ -133,26 +133,30 @@
         <option value="604800">7 Days</option>
       </select>
     </div>
-  <h1>Summary</h1>
-  <div class="value" id="summary">
+    <h1>Summary</h1>
+    <div class="value" id="summary">
       Click the button below to generate a summary.
-  </div>
-  <!-- GPT Input Section -->
-  <div class="gpt-input-section">
+    </div>
+    <!-- GPT Input Section -->
+    <div class="gpt-input-section">
       <h2>Ask GPT</h2>
       <textarea
           id="gpt-input"
           placeholder="Type your question here and press Enter..."></textarea>
+    </div>
+    <button id="generate-summary-button">Generate Summary</button>
   </div>
-  <button id="generate-summary-button">Generate Summary</button>
 </div>
-</div>
+ 
+<!-- Toggle Button -->
+<button id="toggle-summary-button" class="toggle-summary-button">Toggle Summary</button>
+ 
 </div>
 <script src="app.js"></script>
 <script src="./askgpt.js"></script>
 <script src="./logout.js"></script>
 <script src="./report.js"></script>
-
+ 
 <script>
   // Fetch the family name after the panel page loads
   document.addEventListener("DOMContentLoaded", () => {
@@ -168,10 +172,10 @@ async function fetchEC2Status() {
     const instanceIds = "i-062ae4e7dfac33f4d"; // Replace with your instance ID
  
     // Construct the full API URL with query parameters
-    const fullUrl = ${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)};
+    const fullUrl = `${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)}`;
  
     try {
-        console.log(Sending API Request to: ${fullUrl});
+        console.log(`Sending API Request to: ${fullUrl}`);
  
         // Make the GET request
         const response = await fetch(fullUrl, {
@@ -183,7 +187,7 @@ async function fetchEC2Status() {
  
         // Check if the response is successful
         if (!response.ok) {
-            console.error(API Request failed with status: ${response.status} ${response.statusText});
+            console.error(`API Request failed with status: ${response.status} ${response.statusText}`);
             return;
         }
  
@@ -219,10 +223,10 @@ async function toggleEC2State() {
     const instanceIds = "i-062ae4e7dfac33f4d"; // Replace with your instance ID
     const action = toggleSwitch.checked ? "start" : "stop"; // Determine action based on toggle state
  
-    const fullUrl = ${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)};
+    const fullUrl = `${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)}`;
  
     try {
-        console.log(Sending API Request to: ${fullUrl});
+        console.log(`Sending API Request to: ${fullUrl}`);
  
         // Make the GET request
         const response = await fetch(fullUrl, {
@@ -233,7 +237,7 @@ async function toggleEC2State() {
         });
  
         if (!response.ok) {
-            console.error(API Request failed with status: ${response.status} ${response.statusText});
+            console.error(`API Request failed with status: ${response.status} ${response.statusText}`);
             toggleSwitch.checked = !toggleSwitch.checked; // Revert toggle state on failure
             return;
         }
@@ -265,6 +269,24 @@ document.getElementById("ec2-toggle").addEventListener("change", toggleEC2State)
 // Fetch the status on page load
 document.addEventListener("DOMContentLoaded", () => {
     fetchEC2Status();
+});
+ 
+</script>
+ 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+  const summarySection = document.getElementById("summary-section");
+  const toggleButton = document.getElementById("toggle-summary-button");
+ 
+  toggleButton.addEventListener("click", () => {
+    if (summarySection.classList.contains("visible")) {
+      // Hide the summary section
+      summarySection.classList.remove("visible");
+    } else {
+      // Show the summary section
+      summarySection.classList.add("visible");
+    }
+  });
 });
  
 </script>

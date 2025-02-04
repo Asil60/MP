@@ -1,13 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Handle Enter key submission for user queries
   document.getElementById("gpt-input").addEventListener("keypress", async function (event) {
     if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault(); // Prevent new line
+      event.preventDefault();
 
       const query = event.target.value.trim();
-      if (!query) return; // Ignore empty input
+      if (!query) return;
 
-      // Display loading message
       const summaryDiv = document.getElementById("summary");
       summaryDiv.innerHTML = `<p>Processing your query...</p>`;
 
@@ -18,21 +16,44 @@ document.addEventListener("DOMContentLoaded", function () {
         const rootFSUsage = document.getElementById("root-fs-usage")?.textContent || "Unavailable";
         const serverUptime = document.getElementById("server-uptime")?.textContent || "Unavailable";
 
-        // Fetch request-error data from the server
+        // Fetch request-error data
         const response = await fetch("/requests-errors");
         const requestErrorData = await response.json();
+        let requestErrors = requestErrorData.data?.[0] || { timestamps: [], values: [] };
 
-        // Validate and extract request-error data
-        let requestErrors = { timestamps: [], values: [] };
-        if (requestErrorData.data && requestErrorData.data.length > 0) {
-          requestErrors = requestErrorData.data[0]; // Use the first dataset
-        } else {
-          console.warn("No request-error data available.");
+        // Fetch ModSecurity logs
+        const modsecResponse = await fetch("/modsecurity-data");
+        const modsecData = await modsecResponse.json();
+
+        // Ensure modsecData has logs and extract relevant information
+        let modsecLogs = [];
+        if (modsecData && modsecData.length > 0) {
+          modsecLogs = modsecData.map((log) => {
+            return log.messages.map((message, index) => ({
+              ruleId: message.ruleId,
+              message: message.message,
+              logEntry: message.logEntry || `Log entry ${index + 1}`,  // Optional: Replace this if necessary
+            }));
+          }).flat(); // Flatten the array if multiple messages per log
         }
 
-        // Log the fetched and formatted request-error data for debugging
-        console.log("Fetched Request-Error Data:", requestErrorData);
+        // Fetch Nginx logs
+        const nginxResponse = await fetch("/nginx-logs");
+        const nginxData = await nginxResponse.json();
+        let nginxLogs = nginxData.map((log) => ({ logEntry: log.logEntry }));
+
+        // Fetch Status Codes data
+        const statusCodesResponse = await fetch("/status-codes");
+        const statusCodesData = await statusCodesResponse.json();
+        let statusCodes = statusCodesData.map((status) => ({
+          status: status.status,
+          value: status.value,
+        }));
+
         console.log("Formatted Request-Errors for GPT:", requestErrors);
+        console.log("Formatted ModSecurity Logs for GPT:", modsecLogs);
+        console.log("Formatted Nginx Logs for GPT:", nginxLogs);
+        console.log("Formatted Status Codes for GPT:", statusCodes);
 
         // Send query and all system data to the GPT endpoint
         const gptResponse = await fetch("/ask-gpt", {
@@ -46,30 +67,24 @@ document.addEventListener("DOMContentLoaded", function () {
               rootFSUsage,
               serverUptime,
               requestsErrors: requestErrors,
+              modsecLogs: modsecLogs,
+              nginxLogs: nginxLogs,
+              statusCodes: statusCodes, // Add status codes to the data
             },
           }),
         });
 
-        // Process GPT's response
         const result = await gptResponse.json();
         if (!result.answer) throw new Error("No response from GPT.");
 
-        // Display GPT's response
         summaryDiv.innerHTML = `<p><strong>You asked:</strong> "${query}"</p><p>${result.answer}</p>`;
       } catch (error) {
         console.error("Error fetching GPT response:", error);
         summaryDiv.innerHTML = `<p style='color: red;'>Error processing query. Please try again.</p>`;
       }
 
-      // Clear the input and reset its height
       event.target.value = "";
       event.target.style.height = "auto";
     }
-  });
-
-  // Adjust textarea height dynamically as user types
-  document.getElementById("gpt-input").addEventListener("input", function () {
-    this.style.height = "auto"; // Reset height
-    this.style.height = this.scrollHeight + "px"; // Adjust height dynamically
   });
 });
