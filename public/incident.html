@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lumiere Proxy Dashboard</title>
-  <link rel="stylesheet" href="./alertstyle.css">
+  <link rel="stylesheet" href="./incidentstyle.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -17,6 +17,7 @@
   <script src="./ec2.js"></script>
  
 </head>
+ 
 <body>
  <!-- Main Layout -->
 <div class="layout-container">
@@ -35,10 +36,10 @@
     <a href="./serverC.html" class="sidenav-link">
       <span class="icon">🖥️</span> <span class="text">Server C</span>
     </a>
-    <a href="./alerts.html" class="sidenav-link active">
+    <a href="./alerts.html" class="sidenav-link">
       <span class="icon">📜</span> <span class="text">Alerts</span>
     </a>
-    <a href="./incident.html" class="sidenav-link">
+    <a href="#" class="sidenav-link active">
       <span class="icon">🛡️</span> <span class="text">Incident Response</span>
     </a>
     <a id="downloadPDF" class="sidenav-link">
@@ -61,13 +62,66 @@
   <!-- Main Content -->
 <!-- Main Content -->
 <div class="main-content">
-    <div class="card-grid">
-        <div id="alert-container">
-            <h2>⚠ Real-Time Security Alerts</h2>
-            <div id="alert-box"></div>
-          </div>
+  <div class="incident-container">
+    <h2>Incident Ticketing System</h2>
+ 
+    <!-- Filter Section -->
+    <div class="filter-container">
+      <label for="filter-type">Filter by:</label>
+      <select id="filter-type">
+        <option value="id">Ticket ID</option>
+        <option value="time">Time</option>
+        <option value="status">Status</option>
+      </select>
+      <input type="text" id="filter-input" placeholder="Enter filter value...">
+      <button id="apply-filter">Apply Filter</button>
+      <button id="clear-filter">Clear Filter</button>
     </div>
-</div>
+ 
+    <!-- Table -->
+    <table id="incident-table">
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="incident-body">
+        <!-- Tickets will be dynamically inserted here -->
+      </tbody>
+    </table>
+ 
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+      <button id="prev-page" disabled>&laquo; Previous</button>
+      <span id="page-info"></span>
+      <button id="next-page" disabled>Next &raquo;</button>
+    </div>
+  </div>
+ 
+    <!-- Modal for displaying full ticket details -->
+    <div id="ticket-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Ticket Details</h3>
+        <p><strong>Ticket ID:</strong> <span id="modal-ticket-id"></span></p>
+        <p><strong>Type:</strong> <span id="modal-type"></span></p>
+        <p><strong>Time:</strong> <span id="modal-time"></span></p>
+        <p><strong>IP Address:</strong> <span id="modal-ip"></span></p>
+        <p><strong>URI:</strong> <span id="modal-uri"></span></p>
+        <p><strong>Message:</strong> <span id="modal-message"></span></p>
+        <p><strong>Status:</strong> <span id="modal-status"></span></p>
+ 
+        <!-- Closing Statement Input (Only visible when resolving) -->
+        <div id="closing-statement-section">
+          <label for="closing-statement"><strong>Closing Statement:</strong></label>
+          <input type="text" id="closing-statement" placeholder="Enter a closing statement..." required>
+        </div>
+ 
+        <button id="resolve-btn" disabled>Mark as Resolved</button>
+      </div>
+    </div>
 </div>
 </div>
 <script>
@@ -76,6 +130,7 @@
     fetchFamilyName();
   });
 </script>
+<script src="./incident.js"></script>
 <script src="./logout.js"></script>
 <script src="./report.js"></script>
 <script src="./alerts.js"></script>

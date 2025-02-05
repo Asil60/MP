@@ -1,0 +1,1111 @@
+app.get("/modsecurity-data", async (req, res) => {
+    try {
+      const start = Math.floor(Date.now() / 1000) - 3600; // Start time (last 1 hour)
+      const end = Math.floor(Date.now() / 1000); // End time (current time)
+   
+      const query = `{job="modsecurity"}`; // Your query
+   
+      const response = await axios.get(`http://13.251.167.13:3000/api/datasources/proxy/9/loki/api/v1/query_range`, {
+        params: {
+          query,
+          start,
+          end,
+          step: 10,
+        },
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      });
+   
+      // Log the raw response data for debugging
+      console.log("API Response:", JSON.stringify(response.data.data.result, null, 2));
+   
+      // Process and filter the data
+      const result = response.data.data.result;
+   
+      const extractedData = result.map((entry) => {
+        if (entry.values?.[0]) {
+          try {
+            const rawJson = entry.values[0][1]; // Assuming this is the stringified JSON
+            console.log("Raw JSON:", rawJson); // Debug log to check the raw JSON string
+   
+            const parsedData = JSON.parse(rawJson); // Parsing the JSON string from values[0][1]
+            console.log("Parsed Data:", parsedData); // Log parsed data for debugging
+   
+            // Destructure and extract only the relevant fields
+            const {
+              transaction: {
+                client_ip = "Unknown IP",
+                time_stamp = "Unknown Timestamp",
+                request = {},
+                response = {},
+                messages = [],
+              },
+              producer: {
+                modsecurity = "Unknown version",
+                connector = "Unknown connector",
+              } = {},
+            } = parsedData;
+   
+            // Handle missing request or response details and set defaults
+            const { method = "Unknown Method", uri = "Unknown URI" } = request;
+            const { http_code = "Unknown HTTP Code", body = "Unknown Body" } = response;
+   
+            // Log to verify extracted fields
+            console.log("Extracted request:", method, uri);
+            console.log("Extracted response:", http_code, body);
+   
+            // Extract the ruleId and message from the messages array using the correct path
+            const messageData = messages.map((message, index) => {
+              // Check if 'message' exists, else use 'No message'
+              const ruleId = message?.details?.ruleId || "Unknown Rule ID";
+              const messageText = message?.details?.message || "No message";
+   
+              console.log(`Message ${index}: ruleId - ${ruleId}, message - ${messageText}`); // Log each message
+   
+              return {
+                ruleId,
+                message: messageText,
+              };
+            });
+   
+            // Return the structured data
+            return {
+              client_ip,
+              time_stamp,
+              request: {
+                method,
+                uri,
+              },
+              response: {
+                http_code,
+                body,
+              },
+              modsecurity: {
+                version: modsecurity,
+                connector: connector,
+              },
+              messages: messageData,
+            };
+          } catch (err) {
+            console.error("Error parsing JSON:", err.message);
+            return null; // Skip this entry if JSON parsing fails
+          }
+        }
+        return null; // Return null if there's no valid data
+      }).filter((item) => item !== null); // Remove any null values
+   
+      // Return the extracted data to the frontend
+      res.json(extractedData);
+    } catch (error) {
+      console.error("Error fetching modsecurity data:", error.message);
+      res.status(500).send("Failed to fetch modsecurity data.");
+    }
+  });
+   
+   
+  http://localhost:3000/modsecurity-data
+   
+  http://13.251.167.13:3000/api/datasources/proxy/9/loki/api/v1/query_range?query=count_over_time({job="modsecurity"} |~ "union select|select.*from|drop table|--" [5m]) > 0&start=1707000000000&end=1707050000000
+   
+  http://13.251.167.13:3000/api/datasources/proxy/9/loki/api/v1/query_range?query=count_over_time({job="modsecurity"} |~ "union select|select.*from|drop table|--" [5m]) > 0&start=1738656000&end=1738662323
+   
+  server.js:
+   
+  // Endpoint to fetch ModSecurity attack logs for the past 1 hour
+  app.get("/modsecurity-attacks", async (req, res) => {
+    try {
+      const start = Math.floor(Date.now() / 1000) - 3600; // Start time (1 hour ago)
+      const end = Math.floor(Date.now() / 1000); // Current time
+   
+      const query = `{job="modsecurity"} |~ "union select|select.*from|drop table|--"`; // Loki query for SQLi attack patterns
+   
+      const response = await axios.get(LOKI_API_URL, {
+        params: {
+          query,
+          start,
+          end,
+          step: 10, // Adjust for better resolution
+        },
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      });
+   
+      const result = response.data.data.result;
+   
+      // Extract attack logs only (removing timestamp)
+      const extractedAttacks = result.flatMap((entry) =>
+        entry.values.map((log) => {
+          try {
+            const attackData = JSON.parse(log[1]); // Convert log message to JSON
+            return attackData;
+          } catch (error) {
+            console.error("Error parsing attack log data:", error.message);
+            return null;
+          }
+        })
+      ).filter(log => log !== null);
+   
+      // Send structured attack logs to the frontend
+      res.json(extractedAttacks);
+    } catch (error) {
+      console.error("Error fetching ModSecurity attack logs:", error.message);
+      res.status(500).send("Failed to fetch ModSecurity attack logs.");
+    }
+  });
+   
+  715
+   
+  // Function to fetch ModSecurity Alerts
+  async function fetchModSecurityAlerts() {
+    try {
+      const response = await fetch("/modsecurity-attacks"); // Update API URL if needed
+      const data = await response.json();
+   
+      if (!data || data.length === 0) {
+        console.warn("⚠️ No ModSecurity attack logs available.");
+        document.getElementById("alert-box").innerHTML = "<p>No security threats detected.</p>";
+        return;
+      }
+   
+      const alertBox = document.getElementById("alert-box");
+      if (!alertBox) {
+        console.error("❌ Error: 'alert-box' not found in the DOM!");
+        return;
+      }
+   
+      alertBox.innerHTML = ""; // Clear previous alerts
+   
+      data.forEach(alert => {
+        const div = document.createElement("div");
+        div.className = "alert";
+        div.innerHTML = `<strong>⚠️ ALERT:</strong> Possible SQL Injection detected!<br>
+          🕒 <strong>Time:</strong> ${alert.transaction.time_stamp}<br>
+          📌 <strong>IP:</strong> ${alert.transaction.client_ip}<br>
+          🔗 <strong>URI:</strong> ${alert.transaction.request.uri}<br>
+          📝 <strong>Message:</strong> ${alert.transaction.messages[0]?.message || "Unknown alert"}`;
+   
+        alertBox.prepend(div);
+      });
+    } catch (error) {
+      console.error("❌ Error fetching ModSecurity alerts:", error);
+    }
+  }
+   
+  684
+   
+  alert.html:
+   
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumiere Proxy Dashboard</title>
+    <link rel="stylesheet" href="./serverAstyle.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="login.js"></script>
+    <script src="./ec2.js"></script>
+   
+  </head>
+  <style>
+      #alert-container {
+        margin: 20px;
+        padding: 15px;
+        background-color: #222;
+        color: white;
+        border-radius: 5px;
+      }
+   
+      .alert {
+        background: red;
+        color: white;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+    </style>
+  <body>
+   <!-- Main Layout -->
+  <div class="layout-container">
+    <!-- Sidebar -->
+    <div class="sidenav">
+      <h2 class="titles">System Dashboard</h2>
+      <a href="./panel.html" class="sidenav-link">
+        <span class="icon">ℹ</span> <span class="text">System Information</span>
+      </a>
+      <a href="./serverA.html" class="sidenav-link">
+        <span class="icon">🖥</span> <span class="text">Server A</span>
+      </a>
+      <a href="./serverB.html" class="sidenav-link">
+        <span class="icon">🖥</span> <span class="text">Server B</span>
+      </a>
+      <a href="./serverC.html" class="sidenav-link">
+        <span class="icon">🖥</span> <span class="text">Server C</span>
+      </a>
+      <a href="#" class="sidenav-link active">
+        <span class="icon">📜</span> <span class="text">Alerts</span>
+      </a>
+      <a id="downloadPDF" class="sidenav-link">
+        <span class="icon"><i class="fas fa-download"></i></span>
+        <span class="text">Download Report</span>
+      </a>
+      <div class ="Account">
+        <p><ul><b>Account Page</b></ul></p>
+        <a class="sidenav-link">
+          <span class="text" id="family-name-display">Loading...</span>
+        </a>
+        <a class="sidenav-link1">
+          <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;&nbsp;
+          <span class="text" id="logoutButton">Sign Out </span>
+         
+        </a>
+      </div>
+    </div>
+   
+    <!-- Main Content -->
+   
+    <div id="alert-container">
+      <h2>⚠️ Real-Time Security Alerts</h2>
+      <div id="alert-box"></div>
+    </div>
+   
+   
+   
+  <!-- Summary Section -->
+  <div class="summary-section">
+    <div class="section-container">
+      <!-- Timeframe Dropdown -->
+      <div class="dropdown-container">
+        <label for="timeframe">Select Timeframe:</label>
+        <select id="timeframe">
+          <option value="live" selected>Live</option>
+          <option value="3600">1 Hour</option>
+          <option value="7200">2 Hours</option>
+          <option value="18000">5 Hours</option>
+          <option value="36000">10 Hours</option>
+          <option value="86400">1 Day</option>
+          <option value="432000">5 Days</option>
+          <option value="604800">7 Days</option>
+        </select>
+      </div>
+    <h1>Summary</h1>
+    <div class="value" id="summary">
+        Click the button below to generate a summary.
+    </div>
+    <!-- GPT Input Section -->
+    <div class="gpt-input-section">
+        <h2>Ask GPT</h2>
+        <textarea
+            id="gpt-input"
+            placeholder="Type your question here and press Enter..."></textarea>
+    </div>
+    <button id="generate-summary-button">Generate Summary</button>
+  </div>
+  </div>
+  </div>
+  <script src="app.js"></script>
+  <script src="./askgpt.js"></script>
+  <script src="./logout.js"></script>
+  <script src="./report.js"></script>
+   
+  </html>
+   
+  http://13.251.167.13:3000/api/datasources/proxy/16/api/v1/query?query=100*(1-avg(rate(node_cpu_seconds_total{mode="idle",instance="10.0.4.85:9100"}[5m])))
+   
+  Mohamedasil89@gmail.com
+   
+  DisneyPlus201906#
+   
+  http://13.251.167.13:3000/api/datasources/proxy/14/api/v1/query?query=100*(1-avg(rate(node_cpu_seconds_total{mode="idle",instance="10.0.2.208:9100"}[5m])))
+  
+   
+  https://www.unixtimestamp.com/index.php
+  Unix Time Stamp - Epoch Converter
+  Epoch and unix timestamp converter for developers. Date and time function syntax reference for various programming languages.
+   
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumiere Proxy Dashboard</title>
+    <link rel="stylesheet" href="./incidentstyle.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="login.js"></script>
+    <script src="./ec2.js"></script>
+   
+  </head>
+   
+  <body>
+   <!-- Main Layout -->
+  <div class="layout-container">
+    <!-- Sidebar -->
+    <div class="sidenav">
+      <h2 class="titles">System Dashboard</h2>
+      <a href="./panel.html" class="sidenav-link">
+        <span class="icon">ℹ️</span> <span class="text">System Information</span>
+      </a>
+      <a href="./serverA.html" class="sidenav-link">
+        <span class="icon">🖥️</span> <span class="text">Server A</span>
+      </a>
+      <a href="./serverB.html" class="sidenav-link">
+        <span class="icon">🖥️</span> <span class="text">Server B</span>
+      </a>
+      <a href="./serverC.html" class="sidenav-link">
+        <span class="icon">🖥️</span> <span class="text">Server C</span>
+      </a>
+      <a href="./alerts.html" class="sidenav-link">
+        <span class="icon">📜</span> <span class="text">Alerts</span>
+      </a>
+      <a href="#" class="sidenav-link active">
+          <span class="icon">📜</span> <span class="text">Incident Responce</span>
+      </a>
+      <a id="downloadPDF" class="sidenav-link">
+        <span class="icon"><i class="fas fa-download"></i></span>
+        <span class="text">Download Report</span>
+      </a>
+      <div class ="Account">
+        <p><ul><b>Account Page</b></ul></p>
+        <a class="sidenav-link">
+          <span class="text" id="family-name-display">Loading...</span>
+        </a>
+        <a class="sidenav-link1">
+          <i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;&nbsp;
+          <span class="text" id="logoutButton">Sign Out </span>
+         
+        </a>
+      </div>
+    </div>
+   
+    <!-- Main Content -->
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="incident-container">
+      <h2>Incident Ticketing System</h2>
+   
+      <!-- Filter Section -->
+      <div class="filter-container">
+        <label for="filter-type">Filter by:</label>
+        <select id="filter-type">
+          <option value="id">Ticket ID</option>
+          <option value="time">Time</option>
+          <option value="status">Status</option>
+        </select>
+        <input type="text" id="filter-input" placeholder="Enter filter value...">
+        <button id="apply-filter">Apply Filter</button>
+        <button id="clear-filter">Clear Filter</button>
+      </div>
+   
+      <!-- Table -->
+      <table id="incident-table">
+        <thead>
+          <tr>
+            <th>Ticket ID</th>
+            <th>Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="incident-body">
+          <!-- Tickets will be dynamically inserted here -->
+        </tbody>
+      </table>
+   
+      <!-- Pagination Controls -->
+      <div class="pagination-controls">
+        <button id="prev-page" disabled>&laquo; Previous</button>
+        <span id="page-info"></span>
+        <button id="next-page" disabled>Next &raquo;</button>
+      </div>
+    </div>
+   
+      <!-- Modal for displaying full ticket details -->
+      <div id="ticket-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-btn">&times;</span>
+          <h3>Ticket Details</h3>
+          <p><strong>Ticket ID:</strong> <span id="modal-ticket-id"></span></p>
+          <p><strong>Type:</strong> <span id="modal-type"></span></p>
+          <p><strong>Time:</strong> <span id="modal-time"></span></p>
+          <p><strong>IP Address:</strong> <span id="modal-ip"></span></p>
+          <p><strong>URI:</strong> <span id="modal-uri"></span></p>
+          <p><strong>Message:</strong> <span id="modal-message"></span></p>
+          <p><strong>Status:</strong> <span id="modal-status"></span></p>
+   
+          <!-- Closing Statement Input (Only visible when resolving) -->
+          <div id="closing-statement-section">
+            <label for="closing-statement"><strong>Closing Statement:</strong></label>
+            <input type="text" id="closing-statement" placeholder="Enter a closing statement..." required>
+          </div>
+   
+          <button id="resolve-btn" disabled>Mark as Resolved</button>
+        </div>
+      </div>
+  </div>
+  </div>
+  <script>
+    // Fetch the family name after the panel page loads
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchFamilyName();
+    });
+  </script>
+  <script src="./incident.js"></script>
+  <script src="./logout.js"></script>
+  <script src="./report.js"></script>
+  <script src="./alerts.js"></script>
+  </body>
+   
+  </html>
+   
+  document.addEventListener("DOMContentLoaded", function () {
+      const incidentBody = document.getElementById("incident-body");
+      const modal = document.getElementById("ticket-modal");
+      const closeModal = document.querySelector(".close-btn");
+      const resolveBtn = document.getElementById("resolve-btn");
+      const closingStatementSection = document.getElementById("closing-statement-section");
+      const filterType = document.getElementById("filter-type");
+      const filterInput = document.getElementById("filter-input");
+      const applyFilter = document.getElementById("apply-filter");
+      const clearFilter = document.getElementById("clear-filter");
+      const prevPage = document.getElementById("prev-page");
+      const nextPage = document.getElementById("next-page");
+      const pageInfo = document.getElementById("page-info");
+   
+      const rowsPerPage = 10;
+      let currentPage = 1;
+      let tickets = JSON.parse(localStorage.getItem("incidentTickets")) || [];
+      let filteredTickets = [...tickets];
+   
+      function loadIncidentTickets(page = 1) {
+          const start = (page - 1) * rowsPerPage;
+          const end = start + rowsPerPage;
+          const currentTickets = filteredTickets.slice(start, end);
+   
+          incidentBody.innerHTML = "";
+          currentTickets.forEach(ticket => {
+              const row = document.createElement("tr");
+   
+              row.innerHTML = `
+                  <td class="ticket-id" data-id="${ticket.id}">${ticket.id}</td>
+                  <td class="time">${ticket.time}</td>
+                  <td class="status">${ticket.status}</td>
+              `;
+   
+              row.querySelector(".ticket-id").addEventListener("click", function () {
+                  openTicketModal(ticket);
+              });
+   
+              incidentBody.appendChild(row);
+          });
+   
+          updatePaginationControls();
+      }
+   
+      function updatePaginationControls() {
+          const totalPages = Math.ceil(filteredTickets.length / rowsPerPage);
+          pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+          prevPage.disabled = currentPage === 1;
+          nextPage.disabled = currentPage === totalPages;
+      }
+   
+      function openTicketModal(ticket) {
+          document.getElementById("modal-ticket-id").innerText = ticket.id;
+          document.getElementById("modal-type").innerText = ticket.type || "N/A";
+          document.getElementById("modal-time").innerText = ticket.time;
+          document.getElementById("modal-ip").innerText = ticket.ip || "N/A";
+          document.getElementById("modal-uri").innerText = ticket.uri || "N/A";
+          document.getElementById("modal-message").innerText = ticket.message || "N/A";
+          document.getElementById("modal-status").innerText = ticket.status;
+   
+          if (ticket.status === "Resolved") {
+              closingStatementSection.innerHTML = `<p><strong>Closing Statement:</strong> ${ticket.closingStatement || "No statement provided."}</p>`;
+              resolveBtn.style.display = "none";
+          } else {
+              closingStatementSection.innerHTML = `
+                  <label for="closing-statement"><strong>Closing Statement:</strong></label>
+                  <input type="text" id="closing-statement" placeholder="Enter a closing statement..." required>
+              `;
+              resolveBtn.style.display = "block";
+              resolveBtn.disabled = true;
+   
+              document.getElementById("closing-statement").addEventListener("input", function () {
+                  resolveBtn.disabled = !this.value.trim();
+              });
+   
+              resolveBtn.setAttribute("data-id", ticket.id);
+          }
+   
+          modal.style.display = "block";
+      }
+   
+      function resolveTicket(ticketID) {
+          tickets = tickets.map(ticket => {
+              if (ticket.id === ticketID) {
+                  const closingStatement = document.getElementById("closing-statement").value.trim();
+                  return { ...ticket, status: "Resolved", closingStatement };
+              }
+              return ticket;
+          });
+   
+          localStorage.setItem("incidentTickets", JSON.stringify(tickets));
+          filteredTickets = [...tickets];
+          modal.style.display = "none";
+          loadIncidentTickets(currentPage);
+      }
+   
+      function filterTickets() {
+          const filterValue = filterInput.value.trim().toLowerCase();
+          const filterKey = filterType.value;
+   
+          filteredTickets = tickets.filter(ticket => {
+              if (filterKey === "id") {
+                  return ticket.id.toLowerCase().includes(filterValue);
+              } else if (filterKey === "time") {
+                  return ticket.time.toLowerCase().includes(filterValue);
+              } else if (filterKey === "status") {
+                  return ticket.status.toLowerCase().includes(filterValue);
+              }
+              return true;
+          });
+   
+          currentPage = 1; // Reset to first page after filtering
+          loadIncidentTickets();
+      }
+   
+      resolveBtn.addEventListener("click", function () {
+          const ticketID = this.getAttribute("data-id");
+          resolveTicket(ticketID);
+      });
+   
+      applyFilter.addEventListener("click", filterTickets);
+   
+      clearFilter.addEventListener("click", () => {
+          filterInput.value = "";
+          filteredTickets = [...tickets];
+          currentPage = 1;
+          loadIncidentTickets();
+      });
+   
+      prevPage.addEventListener("click", () => {
+          if (currentPage > 1) {
+              currentPage--;
+              loadIncidentTickets(currentPage);
+          }
+      });
+   
+      nextPage.addEventListener("click", () => {
+          const totalPages = Math.ceil(filteredTickets.length / rowsPerPage);
+          if (currentPage < totalPages) {
+              currentPage++;
+              loadIncidentTickets(currentPage);
+          }
+      });
+   
+      closeModal.addEventListener("click", function () {
+          modal.style.display = "none";
+      });
+   
+      window.addEventListener("click", function (event) {
+          if (event.target === modal) {
+              modal.style.display = "none";
+          }
+      });
+   
+      loadIncidentTickets();
+  });
+   
+  /* Incident Table Styling */
+  .incident-container {
+      text-align: center;
+      margin: 40px auto;
+      width: 80%;
+      padding: 20px;
+      background: rgb(56, 54, 54);
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+   
+  h2 {
+      color: #ffffff;
+      font-size: 22px;
+      margin-bottom: 20px;
+  }
+   
+  #incident-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+  }
+   
+  #incident-table th, #incident-table td {
+      padding: 14px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+  }
+   
+  #incident-table th {
+      background: #000000;
+      color: rgb(255, 255, 255);
+      font-size: 14px;
+      text-transform: uppercase;
+  }
+   
+  #incident-table td {
+      background: #ffffff;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+  }
+   
+  #incident-table tr:hover td {
+      background: #f1f1f1;
+  }
+   
+  /* Status Colors */
+  .status {
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 6px;
+  }
+   
+  .status.Pending {
+      background: #ffc107;
+      color: #ffffff;
+  }
+   
+  .status.Resolved {
+      background: #28a745;
+      color: #fff;
+  }
+   
+  /* Modal Styling */
+  .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+  }
+   
+  .modal-content {
+      background-color: white;
+      padding: 25px;
+      margin: 8% auto;
+      width: 40%;
+      border-radius: 12px;
+      text-align: left;
+      position: relative;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease-in-out;
+  }
+   
+  /* Modal Fade-in Animation */
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+   
+  .close-btn {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #666;
+      transition: color 0.2s ease-in-out;
+  }
+   
+  .close-btn:hover {
+      color: #ff4d4d;
+  }
+   
+  /* Modal Input */
+  #closing-statement-section {
+      margin-top: 15px;
+  }
+   
+  #closing-statement {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+      transition: border 0.2s ease-in-out;
+  }
+   
+  #closing-statement:focus {
+      border-color: #4a69bd;
+  }
+   
+  /* Resolve Button */
+  #resolve-btn {
+      background: #28a745;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 15px;
+      border-radius: 6px;
+      display: block;
+      width: 100%;
+      transition: background 0.2s ease-in-out;
+  }
+   
+  #resolve-btn:hover {
+      background: #218838;
+  }
+   
+  #resolve-btn:disabled {
+      background: #b1b1b1;
+      cursor: not-allowed;
+  }
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+  /* General Styles */
+   
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: #0e0e20; /* Deep dark background */
+          color: #e0e0e0;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          width: 100%;
+        }
+         
+        /* Layout Container */
+        .layout-container {
+          display: flex;
+          width: 100%;
+          height: 100%;
+        }
+         
+        /* Sidebar */
+        .sidenav {
+          position: fixed; /* Fixed position to stay on the side */
+          left: 0;
+          top: 0;
+          background-color: #181830; /* Dark purple-blue background */
+          color: #b0b3c5; /* Light gray text */
+          padding: 20px;
+          height: 100vh; /* Full height */
+          width: 250px; /* Fixed width */
+          box-sizing: border-box;
+          overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+       
+        /* Sidebar Header */
+        .sidenav h2 {
+          font-size: 1.2rem;
+          margin-bottom: 20px;
+        }
+       
+        /* Sidebar Links */
+        .sidenav .sidenav-link {
+          display: flex;
+          align-items: center;
+          padding: 10px;
+          margin: 10px 0;
+          text-decoration: none;
+          color: #ffffff; /* Neutral gray text */
+          border-radius: 5px;
+          background-color: #2a2a3f; /* Neutral button background */
+          transition: background-color 0.3s ease, color 0.3s ease;
+        }
+       
+        /* Alternative Link Style */
+        .sidenav-link1 {
+          display: flex;
+          cursor: pointer;
+          align-items: center;
+          padding: 10px;
+          margin: 10px 0;
+          text-decoration: none;
+          color: #ffffff; /* Neutral gray text */
+          border-radius: 5px;
+          background-color: #613b96; /* Neutral button background */
+          transition: background-color 0.3s ease, color 0.3s ease;
+        }
+       
+        /* Active Sidebar Link */
+        .sidenav .sidenav-link.active {
+          background-color: #6842ff; /* Highlighted active state */
+          color: #fff;
+          font-weight: bold;
+        }
+       
+        /* Hover Effect */
+        .sidenav .sidenav-link:hover {
+          background-color: #3b3b5c;
+          color: #fff;
+        }
+       
+        /* Sidebar Icons */
+        .sidenav .sidenav-link .icon {
+          margin-right: 10px;
+          font-size: 1.2rem;
+        }
+       
+        /* Account Section */
+        .Account {
+          margin-bottom: 10%;
+        }
+       
+         
+        /* Main Content */
+        .main-content {
+          margin-left: 250px; /* Same as the sidebar width */
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+          min-width: 0; /* Ensure it doesn't overflow */
+          box-sizing: border-box; /* Include padding in width calculation */
+        }
+         
+        .card-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Auto-fit with a minimum width */
+          gap: 10px;
+        }
+         
+       
+         
+       
+         
+       
+         
+         
+       
+       
+       
+       
+       
+       
+         
+         
+         
+       
+       
+       
+        /* General Responsive Adjustments */
+        @media screen and (max-width: 1024px) {
+          .layout-container {
+            flex-direction: column; /* Stack sidebar and content vertically */
+          }
+       
+           /* Sidebar moves to top and becomes a column */
+           .sidenav {
+            position: relative;
+            width: 100%;
+            height: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column; /* Stack sidebar items vertically */
+            background-color: #181830;
+            gap: 10px; /* Add space between items */
+            margin-bottom: 10px; /* Add space between sidebar and content */
+          }
+       
+          /* Sidebar links align vertically */
+          .sidenav .sidenav-link {
+            padding: 10px;
+            margin: 5px;
+            text-align: center;
+            font-size: 1rem;
+            width: 100%; /* Ensure full width */
+          }
+       
+       
+          /* Main content takes full width */
+          .main-content {
+            margin-left: 0;
+            padding: 15px;
+            flex: 1;
+          }
+        }
+       
+        @media screen and (max-width: 768px) {
+          /* Sidebar becomes a top navbar */
+          .layout-container {
+            flex-direction: column; /* Stack sidebar and content vertically */
+          }
+       
+          .sidenav {
+            width: 100%;
+            padding: 8px;
+            position: relative;
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            gap: 10px;
+          }
+       
+          /* Sidebar links smaller and vertically aligned */
+          .sidenav .sidenav-link {
+            font-size: 0.9rem;
+            padding: 8px;
+            margin: 5px 0;
+            text-align: center;
+            width: 100%; /* Ensure they take full width */
+          }
+       
+          /* Stack the content and GPT section */
+          .main-content {
+            width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+          }
+       
+          /* Cards grid adjusts */
+          .card-grid {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+          }
+       
+         
+        }
+       
+        @media screen and (max-width: 480px) {
+          /* Sidebar links collapse to smaller buttons/icons */
+          .sidenav .sidenav-link {
+            font-size: 0.8rem;
+            padding: 5px;
+            margin: 2px;
+          }
+       
+          /* Main content and GPT adjust */
+          .main-content {
+            margin: 0;
+            padding: 10px;
+          }
+       
+         
+        }
+       
+        /* Smooth Transitions */
+        * {
+          transition: all 0.3s ease-in-out;
+        }
+   
+       
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+        /* Filter Section Styling */
+  .filter-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+  }
+   
+  .filter-container select,
+  .filter-container input,
+  .filter-container button {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+  }
+   
+  .filter-container button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+  }
+   
+  .filter-container button:hover {
+      background-color: #0056b3;
+  }
+   
+  /* Pagination Controls */
+  .pagination-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0;
+      gap: 10px;
+  }
+   
+  .pagination-controls button {
+      padding: 10px 15px;
+      font-size: 14px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+  }
+   
+  .pagination-controls button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+  }
+   
+  .pagination-controls span {
+      font-size: 14px;
+      color: #333;
+  }
+   

@@ -238,6 +238,14 @@ const startTimestamp = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60; // 7 da
 fetchAndUpdateRequestsErrorsChart(startTimestamp);
 
 
+
+
+
+
+
+
+
+
 // Function to fetch all system data (Used in Live Mode)
 function fetchAllData() {
   fetchCPUUsage();
@@ -270,6 +278,10 @@ document.getElementById("timeframe").addEventListener("change", function () {
     fetchRAMUsageForRange(start);
     fetchRootFSUsageForRange(start);
     fetchRequestsErrorsForRange(start);
+    fetchStatusCodesForRange(start);
+    fetchRemoteIPDataForRange(start);
+    fetchModSecurityLogsForRange(start);
+    fetchNginxLogsForRange(start);
   }
 });
 
@@ -389,20 +401,17 @@ async function fetchAndUpdateChart() {
 // Global variable to store the chart instance
 let statusChart = null;
 
-// Function to fetch status codes and update the chart
+// Function to fetch status codes in real-time (Live mode)
 async function fetchStatusCodes() {
   try {
+    if (!isLiveModeActive) return; // Stop updates when a timeframe is selected
+
     const response = await fetch("/status-codes");
     const data = await response.json();
 
     if (!data || data.length === 0) throw new Error("No status data available.");
 
-    // Prepare data for the chart
-    const labels = data.map((item) => `Status ${item.status}`);
-    const values = data.map((item) => item.value);
-
-    // Update the chart
-    updateChart(labels, values);
+    updateStatusChart(data); // Update pie chart
 
     const now = new Date();
     document.getElementById("status-refresh-time").textContent = `Last updated at ${now.toLocaleTimeString()}`;
@@ -410,6 +419,64 @@ async function fetchStatusCodes() {
     console.error("Error fetching status codes:", error);
     document.getElementById("status-refresh-time").textContent = "Error fetching data.";
   }
+}
+
+// Function to fetch and update Status Codes for a selected timeframe
+async function fetchStatusCodesForRange(start) {
+  try {
+    isLiveModeActive = false; // Disable live updates
+
+    const response = await fetch(`/status-codes-range?start=${start}`);
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to fetch status codes range.");
+    }
+
+    updateStatusChart(result.data); // Update pie chart
+
+    const now = new Date();
+    document.getElementById("status-refresh-time").textContent = `Data fetched for range starting at: ${new Date(start * 1000).toLocaleString()}`;
+  } catch (error) {
+    console.error("Error fetching status codes range:", error);
+    document.getElementById("status-refresh-time").textContent = "Error fetching data.";
+  }
+}
+
+// Function to update the Status Code Pie Chart
+function updateStatusChart(data) {
+  if (!data || data.length === 0) {
+    console.error("No status code data available.");
+    return;
+  }
+
+  const labels = data.map(item => `Status ${item.status}`);
+  const values = data.map(item => item.value);
+
+  // Destroy the previous chart before creating a new one to fix Chart.js reuse error
+  if (statusChart) {
+    statusChart.destroy();
+  }
+
+  const ctx = document.getElementById("statusChart").getContext("2d");
+  statusChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: ["#4CAF50", "#FFC107", "#F44336", "#3F51B5", "#9C27B0"],
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" },
+        title: { display: true, text: "Status Code Distribution" },
+      },
+    },
+  });
 }
 
 // Function to update the pie chart
@@ -444,12 +511,21 @@ function updateChart(labels, values) {
   });
 }
 
+
+
+
+
+
+
+
+
 /// Global variable to store the bar chart instance
 let ipBarChart = null;
 
-// Function to fetch remote IP data and update the bar chart
 async function fetchRemoteIPData() {
   try {
+    if (!isLiveModeActive) return; // Stop updates if timeframe is selected
+
     const response = await fetch("/remote-ip-data");
     const data = await response.json();
 
@@ -471,63 +547,79 @@ async function fetchRemoteIPData() {
   }
 }
 
-function updateBarChart(labels, values, timestamps) {
-  const ctx = document.getElementById("ipChart").getContext("2d");
 
-  // Destroy the previous bar chart instance if it exists
+// Function to fetch and update Remote IP Data for a selected timeframe
+async function fetchRemoteIPDataForRange(start) {
+  try {
+    isLiveModeActive = false; // Disable live updates
+
+    const response = await fetch(`/remote-ip-data-range?start=${start}`);
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to fetch remote IP data range.");
+    }
+
+    // Extract and format timestamps
+    const labels = result.data.map(item => item.ip);
+    const values = result.data.map(item => item.values.reduce((sum, entry) => sum + entry.value, 0)); // Sum requests per IP
+
+    updateBarChart(labels, values); // Update the chart
+
+    const now = new Date();
+    document.getElementById("ip-refresh-time").textContent = `Data fetched for range starting at: ${new Date(start * 1000).toLocaleString()}`;
+  } catch (error) {
+    console.error("Error fetching remote IP data range:", error);
+    document.getElementById("ip-refresh-time").textContent = "Error fetching data.";
+  }
+}
+
+
+
+
+// Function to update the Remote IP Bar Chart with Hover Details
+function updateBarChart(labels, values) {
+  if (!labels || labels.length === 0) {
+    console.error("No remote IP data available for chart.");
+    return;
+  }
+
+  // Destroy the previous chart before creating a new one to fix Chart.js reuse error
   if (ipBarChart) {
     ipBarChart.destroy();
   }
 
-  // Create a new bar chart instance
+  const ctx = document.getElementById("ipChart").getContext("2d");
   ipBarChart = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: labels, // Labels for the bars (IP addresses, though hidden in the chart)
-      datasets: [
-        {
-          label: "Requests",
-          data: values,
-          backgroundColor: [
-            "#4caf50",
-            "#ffeb3b",
-            "#2196f3",
-            "#f44336",
-            "#9c27b0",
-          ], // Example colors
-        },
-      ],
+      labels: labels,
+      datasets: [{
+        label: "Requests per IP",
+        data: values,
+        backgroundColor: ["#4CAF50", "#FFC107", "#F44336", "#3F51B5", "#9C27B0"],
+        borderWidth: 1,
+      }],
     },
     options: {
       responsive: true,
       plugins: {
+        legend: { display: false },
+        title: { display: true, text: "Top Remote IPs by Requests" },
         tooltip: {
+          enabled: true,
           callbacks: {
-            label: function (context) {
-              const value = context.raw;
-              const timestamp = timestamps[context.dataIndex];
-              return [`Requests: ${value}`, `Timestamp: ${timestamp}`];
-            },
-          },
-        },
+            label: function (tooltipItem) {
+              const ip = labels[tooltipItem.dataIndex]; // IP Address
+              const count = values[tooltipItem.dataIndex]; // Request Count
+              return `IP: ${ip} - Requests: ${count}`;
+            }
+          }
+        }
       },
       scales: {
-        x: {
-          display: false, // Hide the x-axis
-        },
-        y: {
-          title: {
-            display: true,
-            text: "Request Count",
-            color: "#ffffff",
-            font: {
-              size: 14,
-            },
-          },
-          ticks: {
-            beginAtZero: true,
-          },
-        },
+        x: { title: { display: true, text: "IP Address" } },
+        y: { beginAtZero: true, title: { display: true, text: "Requests" } },
       },
     },
   });
@@ -537,6 +629,8 @@ function updateBarChart(labels, values, timestamps) {
 // Function to fetch and display ModSecurity logs as a table
 async function fetchModSecurityLogs() {
   try {
+    if (!isLiveModeActive) return; // Stop updates when timeframe is selected
+
     // Fetch modsecurity data from the backend
     const response = await fetch("/modsecurity-data");
     const data = await response.json();
@@ -595,23 +689,98 @@ async function fetchModSecurityLogs() {
 
     // Insert table into the HTML
     logsContainer.innerHTML = tableHtml;
-    refreshTime.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+    refreshTime.textContent = `Last updated: ${now.toLocaleTimeString()}`;
   } catch (error) {
     console.error("Error fetching ModSecurity logs:", error);
     document.getElementById("modsecurity-logs").innerHTML = "<p>Error loading logs.</p>";
   }
 }
 
+// Function to fetch and update ModSecurity logs for a selected timeframe
+async function fetchModSecurityLogsForRange(start) {
+  try {
+    isLiveModeActive = false; // Disable live updates
+
+    const response = await fetch(`/modsecurity-data-range?start=${start}`);
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to fetch ModSecurity data range.");
+    }
+
+    updateModSecurityTable(result.data); // Update table with historical data
+
+    document.getElementById("mod-refresh-time").textContent = `Data fetched for range starting at: ${new Date(start * 1000).toLocaleString()}`;
+  } catch (error) {
+    console.error("Error fetching ModSecurity logs range:", error);
+    document.getElementById("mod-refresh-time").textContent = "Error fetching data.";
+  }
+}
+
+// Function to update the ModSecurity table
+function updateModSecurityTable(data) {
+  const logsContainer = document.getElementById("modsecurity-logs");
+  logsContainer.innerHTML = ""; // Clear existing data
+
+  if (!data || data.length === 0) {
+    logsContainer.innerHTML = "<p>No ModSecurity logs available.</p>";
+    return;
+  }
+
+  let tableHtml = `
+      <table class="modsecurity-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>📍 Client IP</th>
+            <th>⏳ Timestamp</th>
+            <th>📝 Request</th>
+            <th>🛑 Rule ID</th>
+            <th>📢 Message</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  data.forEach((log, index) => {
+    log.messages.forEach((msg, msgIndex) => {
+      tableHtml += `
+          <tr>
+            <td>${index + 1}.${msgIndex + 1}</td>
+            <td>${log.client_ip}</td>
+            <td>${log.time_stamp}</td>
+            <td>
+              <details>
+                <summary>View Request</summary>
+                <p><strong>Method:</strong> ${log.request.method}</p>
+                <p><strong>URI:</strong> ${log.request.uri}</p>
+              </details>
+            </td>
+            <td>${msg.ruleId}</td>
+            <td>${msg.message}</td>
+          </tr>
+        `;
+    });
+  });
+
+  tableHtml += `</tbody></table>`;
+  logsContainer.innerHTML = tableHtml;
+}
+
+
+
 
 // Function to fetch and display Nginx logs with structured data
 async function fetchNginxLogs() {
   try {
+    if (!isLiveModeActive) return; // Stop updates if timeframe is selected
+
     // Fetch logs from backend
     const response = await fetch("/nginx-logs");
     const data = await response.json();
 
     const logsContainer = document.getElementById("nginx-logs");
-    const ngrefreshTime = document.getElementById("nginx-refresh-time");
+    const refreshTime = document.getElementById("nginx2-refresh-time");
 
     // Check if data is available
     if (!data || data.length === 0) {
@@ -673,12 +842,102 @@ async function fetchNginxLogs() {
     });
 
     const now = new Date();
-    ngrefreshTime.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+    refreshTime.textContent = `Last updated: ${now.toLocaleTimeString()}`;
   } catch (error) {
     console.error("Error fetching Nginx logs:", error);
     document.getElementById("nginx-logs").innerHTML = "<p>Error loading logs.</p>";
   }
 }
+
+
+
+
+
+// Function to fetch and display Nginx logs for a selected timeframe
+async function fetchNginxLogsForRange(start) {
+  try {
+    isLiveModeActive = false; // Disable live updates
+
+    const response = await fetch(`/nginx-logs-range?start=${start}`);
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to fetch Nginx logs range.");
+    }
+
+    const logsContainer = document.getElementById("nginx-logs");
+    const refreshTime = document.getElementById("nginx2-refresh-time");
+
+    if (!result.data || result.data.length === 0) {
+      logsContainer.innerHTML = "<p>No Nginx logs available for selected timeframe.</p>";
+      refreshTime.textContent = `Data fetched for range starting at: ${new Date(start * 1000).toLocaleString()}`;
+      return;
+    }
+
+    // Sort logs by time (oldest to newest) to ensure all logs appear in order
+    result.data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // Create table structure
+    let tableHtml = `
+      <table class="nginx-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>⏳ Time</th>
+            <th>📍 Remote Address</th>
+            <th>📡 Status</th>
+            <th>📝 Method</th>
+            <th>🔍 Request</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    let newRows = [];
+
+    // Populate table rows
+    result.data.forEach((log, index) => {
+      const formattedTime = new Date(log.timestamp).toLocaleString(); // Ensure timestamps are formatted correctly
+
+      const rowHTML = `
+        <tr class="new-row">
+          <td>${index + 1}</td>
+          <td>${formattedTime}</td>
+          <td>${log.remote_addr}</td>
+          <td>${log.status}</td>
+          <td>${log.method}</td>
+          <td>
+            <details>
+              <summary>View Request</summary>
+              <p>${log.request}</p>
+            </details>
+          </td>
+        </tr>
+      `;
+      newRows.push(rowHTML);
+    });
+
+    tableHtml += newRows.join("") + `</tbody></table>`;
+
+    // Insert table into the HTML
+    logsContainer.innerHTML = tableHtml;
+
+    refreshTime.textContent = `Data fetched for range starting at: ${new Date(start * 1000).toLocaleString()}`;
+  } catch (error) {
+    console.error("Error fetching Nginx logs range:", error);
+    document.getElementById("nginx-refresh-time").textContent = "Error fetching data.";
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 // Function to fetch ModSecurity Alerts
@@ -841,6 +1100,9 @@ async function fetchSummary() {
 
 // ✅ Add event listener to the button
 document.getElementById("generate-summary-button").addEventListener("click", fetchSummary);
+
+
+
 
 
 

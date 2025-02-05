@@ -15,12 +15,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="login.js"></script>
   <script src="./ec2.js"></script>
+  <script src="./report.js"></script>
  
 </head>
 <body>
  
  <!-- Main Layout -->
-<div class="layout-container">
+ <div class="layout-container">
   <!-- Sidebar -->
   <div class="sidenav">
     <h2 class="titles">System Dashboard</h2>
@@ -39,6 +40,10 @@
     <a href="./alerts.html" class="sidenav-link">
       <span class="icon">📜</span> <span class="text">Alerts</span>
     </a>
+    <a href="./incident.html" class="sidenav-link">
+      <span class="icon">🛡️</span> <span class="text">Incident Response</span>
+    </a>
+    
     <a id="downloadPDF" class="sidenav-link">
       <span class="icon"><i class="fas fa-download"></i></span>
       <span class="text">Download Report</span>
@@ -71,10 +76,11 @@
             <p id="ec2-statusA" class="Stopped">Instance Status: Stopped</p>
         </div>
     </div>
+ 
     <div class="card">
-      <h1>Nginx Status</h1>
-      <div class="value" id="nginx-statusA">ON</div>
-      <div class="refresh-timeA" id="nginx-refresh-timeA">Last updated at 8:28:45 PM</div>
+      <h1>Server A Docker Status</h1>
+      <div class="value" id="docker-statusA">ON</div>
+      <div class="refresh-timeA" id="docker-refresh-timeA">Last updated at 8:28:45 PM</div>
     </div>
    
       <div class="card">
@@ -101,14 +107,14 @@
     <div class="card-container2">
       <div class="card">
         <h1>Total Requests & Errors Over Time</h1>
-        <canvas id="requestsErrorsChart"></canvas>
+        <canvas id="requestsErrorsChartA"></canvas>
       </div>
     </div>
      
         <div class="piechart2">
           <div class="card">
             <h1>Remote IP Address Request to Website</h1>
-            <canvas id="ipChart"></canvas>
+            <canvas id="networkTrafficChartA"></canvas>
             <small id="ip-refresh-timeA">Loading...</small>
           </div>
         </div>
@@ -152,7 +158,7 @@
 <button id="toggle-summary-button" class="toggle-summary-button">Toggle Summary</button>
  
 </div>
-<script src="app.js"></script>
+<script src="./serverAapp.js"></script>
 <script src="./askgpt.js"></script>
 <script src="./logout.js"></script>
 <script src="./report.js"></script>

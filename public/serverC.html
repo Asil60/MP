@@ -15,6 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="login.js"></script>
   <script src="./ec2.js"></script>
+  <script src="./report.js"></script>
  
 </head>
 <body>
@@ -38,6 +39,9 @@
     </a>
     <a href="./alerts.html" class="sidenav-link">
       <span class="icon">📜</span> <span class="text">Alerts</span>
+    </a>
+    <a href="./incident.html" class="sidenav-link">
+      <span class="icon">🛡️</span> <span class="text">Incident Response</span>
     </a>
     <a id="downloadPDF" class="sidenav-link">
       <span class="icon"><i class="fas fa-download"></i></span>
@@ -71,10 +75,11 @@
             <p id="ec2-statusC" class="Stopped">Instance Status: Stopped</p>
         </div>
     </div>
+ 
     <div class="card">
-      <h1>Nginx Status</h1>
-      <div class="value" id="nginx-statusC">ON</div>
-      <div class="refresh-timeC" id="nginx-refresh-timeC">Last updated at 8:28:45 PM</div>
+      <h1>Server C Docker Status</h1>
+      <div class="value" id="docker-statusC">ON</div>
+      <div class="refresh-timeC" id="docker-refresh-timeC">Last updated at 8:28:45 PM</div>
     </div>
    
       <div class="card">
@@ -101,14 +106,14 @@
     <div class="card-container2">
       <div class="card">
         <h1>Total Requests & Errors Over Time</h1>
-        <canvas id="requestsErrorsChart"></canvas>
+        <canvas id="requestsErrorsChartC"></canvas>
       </div>
     </div>
      
         <div class="piechart2">
           <div class="card">
             <h1>Remote IP Address Request to Website</h1>
-            <canvas id="ipChart"></canvas>
+            <canvas id="networkTrafficChartC"></canvas>
             <small id="ip-refresh-timeC">Loading...</small>
           </div>
         </div>
@@ -152,7 +157,8 @@
 <button id="toggle-summary-button" class="toggle-summary-button">Toggle Summary</button>
  
 </div>
-<script src="app.js"></script>
+ 
+<script src="./serverCapp.js"></script>
 <script src="./askgpt.js"></script>
 <script src="./logout.js"></script>
 <script src="./report.js"></script>

@@ -1,250 +1,249 @@
-  #alert-container {
-      margin: 20px;
-      padding: 15px;
-      background-color: #222;
-      color: white;
-      border-radius: 5px;
-      height: 1000px;
-    }
- 
-    .alert {
-      background: red;
-      color: white;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-      font-size: 16px;
-    }
+#alert-container {
+  margin: 20px;
+  padding: 15px;
+  background-color: #222;
+  color: white;
+  border-radius: 5px;
+  height: 1000px;
+}
 
-    .alert-box{
-        height: 1000px;
-    }
- 
- 
-    /* General Styles */
+.alert {
+  background: red;
+  color: white;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.alert-box{
+    height: 1000px;
+}
+
+
+/* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #0e0e20; /* Deep dark background */
-    color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-  }
-   
-  /* Layout Container */
-  .layout-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-  }
-   
-  /* Sidebar */
-  .sidenav {
-    position: fixed; /* Fixed position to stay on the side */
-    left: 0;
-    top: 0;
-    background-color: #181830; /* Dark purple-blue background */
-    color: #b0b3c5; /* Light gray text */
-    padding: 20px;
-    height: 100vh; /* Full height */
-    width: 250px; /* Fixed width */
-    box-sizing: border-box;
-    overflow-y: auto; /* Allow scrolling if content overflows */
-  }
- 
-  /* Sidebar Header */
-  .sidenav h2 {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-  }
- 
-  /* Sidebar Links */
-  .sidenav .sidenav-link {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    margin: 10px 0;
-    text-decoration: none;
-    color: #ffffff; /* Neutral gray text */
-    border-radius: 5px;
-    background-color: #2a2a3f; /* Neutral button background */
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
- 
-  /* Alternative Link Style */
-  .sidenav-link1 {
-    display: flex;
-    cursor: pointer;
-    align-items: center;
-    padding: 10px;
-    margin: 10px 0;
-    text-decoration: none;
-    color: #ffffff; /* Neutral gray text */
-    border-radius: 5px;
-    background-color: #613b96; /* Neutral button background */
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
- 
-  /* Active Sidebar Link */
-  .sidenav .sidenav-link.active {
-    background-color: #6842ff; /* Highlighted active state */
-    color: #fff;
-    font-weight: bold;
-  }
- 
-  /* Hover Effect */
-  .sidenav .sidenav-link:hover {
-    background-color: #3b3b5c;
-    color: #fff;
-  }
- 
-  /* Sidebar Icons */
-  .sidenav .sidenav-link .icon {
-    margin-right: 10px;
-    font-size: 1.2rem;
-  }
- 
-  /* Account Section */
-  .Account {
-    margin-bottom: 10%;
-  }
- 
-   
-  /* Main Content */
-  .main-content {
-    margin-left: 250px; /* Same as the sidebar width */
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    min-width: 0; /* Ensure it doesn't overflow */
-    box-sizing: border-box; /* Include padding in width calculation */
-  }
-   
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Auto-fit with a minimum width */
-    gap: 10px;
-  }
-   
- 
-   
- 
-   
- 
-   
-   
- 
- 
- 
- 
- 
- 
-   
-   
-   
- 
- 
- 
-  /* General Responsive Adjustments */
-  @media screen and (max-width: 1024px) {
-    .layout-container {
-      flex-direction: column; /* Stack sidebar and content vertically */
-    }
- 
-     /* Sidebar moves to top and becomes a column */
-     .sidenav {
-      position: relative;
-      width: 100%;
-      height: auto;
-      padding: 10px;
-      display: flex;
-      flex-direction: column; /* Stack sidebar items vertically */
-      background-color: #181830;
-      gap: 10px; /* Add space between items */
-      margin-bottom: 10px; /* Add space between sidebar and content */
-    }
- 
-    /* Sidebar links align vertically */
-    .sidenav .sidenav-link {
-      padding: 10px;
-      margin: 5px;
-      text-align: center;
-      font-size: 1rem;
-      width: 100%; /* Ensure full width */
-    }
- 
- 
-    /* Main content takes full width */
-    .main-content {
-      margin-left: 0;
-      padding: 15px;
-      flex: 1;
-    }
-  }
- 
-  @media screen and (max-width: 768px) {
-    /* Sidebar becomes a top navbar */
-    .layout-container {
-      flex-direction: column; /* Stack sidebar and content vertically */
-    }
- 
-    .sidenav {
-      width: 100%;
-      padding: 8px;
-      position: relative;
-      display: flex;
-      flex-direction: column; /* Stack items vertically */
-      gap: 10px;
-    }
- 
-    /* Sidebar links smaller and vertically aligned */
-    .sidenav .sidenav-link {
-      font-size: 0.9rem;
-      padding: 8px;
-      margin: 5px 0;
-      text-align: center;
-      width: 100%; /* Ensure they take full width */
-    }
- 
-    /* Stack the content and GPT section */
-    .main-content {
-      width: 100%;
-      margin: 0 auto;
-      padding: 10px;
-    }
- 
-    /* Cards grid adjusts */
-    .card-grid {
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 8px;
-    }
- 
-   
-  }
- 
-  @media screen and (max-width: 480px) {
-    /* Sidebar links collapse to smaller buttons/icons */
-    .sidenav .sidenav-link {
-      font-size: 0.8rem;
-      padding: 5px;
-      margin: 2px;
-    }
- 
-    /* Main content and GPT adjust */
-    .main-content {
-      margin: 0;
-      padding: 10px;
-    }
- 
-   
-  }
- 
-  /* Smooth Transitions */
-  * {
-    transition: all 0.3s ease-in-out;
-  }
- 
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 0;
+background-color: #0e0e20; /* Deep dark background */
+color: #e0e0e0;
+display: flex;
+flex-direction: column;
+height: 100%;
+width: 100%;
+}
+
+/* Layout Container */
+.layout-container {
+display: flex;
+width: 100%;
+height: 100%;
+}
+
+/* Sidebar */
+.sidenav {
+position: fixed; /* Fixed position to stay on the side */
+left: 0;
+top: 0;
+background-color: #181830; /* Dark purple-blue background */
+color: #b0b3c5; /* Light gray text */
+padding: 20px;
+height: 100vh; /* Full height */
+width: 250px; /* Fixed width */
+box-sizing: border-box;
+overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+/* Sidebar Header */
+.sidenav h2 {
+font-size: 1.2rem;
+margin-bottom: 20px;
+}
+
+/* Sidebar Links */
+.sidenav .sidenav-link {
+display: flex;
+align-items: center;
+padding: 10px;
+margin: 10px 0;
+text-decoration: none;
+color: #ffffff; /* Neutral gray text */
+border-radius: 5px;
+background-color: #2a2a3f; /* Neutral button background */
+transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Alternative Link Style */
+.sidenav-link1 {
+display: flex;
+cursor: pointer;
+align-items: center;
+padding: 10px;
+margin: 10px 0;
+text-decoration: none;
+color: #ffffff; /* Neutral gray text */
+border-radius: 5px;
+background-color: #613b96; /* Neutral button background */
+transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Active Sidebar Link */
+.sidenav .sidenav-link.active {
+background-color: #6842ff; /* Highlighted active state */
+color: #fff;
+font-weight: bold;
+}
+
+/* Hover Effect */
+.sidenav .sidenav-link:hover {
+background-color: #3b3b5c;
+color: #fff;
+}
+
+/* Sidebar Icons */
+.sidenav .sidenav-link .icon {
+margin-right: 10px;
+font-size: 1.2rem;
+}
+
+/* Account Section */
+.Account {
+margin-bottom: 10%;
+}
+
+
+/* Main Content */
+.main-content {
+margin-left: 250px; /* Same as the sidebar width */
+padding: 20px;
+display: flex;
+flex-direction: column;
+flex-grow: 1;
+min-width: 0; /* Ensure it doesn't overflow */
+box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.card-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Auto-fit with a minimum width */
+gap: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* General Responsive Adjustments */
+@media screen and (max-width: 1024px) {
+.layout-container {
+  flex-direction: column; /* Stack sidebar and content vertically */
+}
+
+ /* Sidebar moves to top and becomes a column */
+ .sidenav {
+  position: relative;
+  width: 100%;
+  height: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column; /* Stack sidebar items vertically */
+  background-color: #181830;
+  gap: 10px; /* Add space between items */
+  margin-bottom: 10px; /* Add space between sidebar and content */
+}
+
+/* Sidebar links align vertically */
+.sidenav .sidenav-link {
+  padding: 10px;
+  margin: 5px;
+  text-align: center;
+  font-size: 1rem;
+  width: 100%; /* Ensure full width */
+}
+
+
+/* Main content takes full width */
+.main-content {
+  margin-left: 0;
+  padding: 15px;
+  flex: 1;
+}
+}
+
+@media screen and (max-width: 768px) {
+/* Sidebar becomes a top navbar */
+.layout-container {
+  flex-direction: column; /* Stack sidebar and content vertically */
+}
+
+.sidenav {
+  width: 100%;
+  padding: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  gap: 10px;
+}
+
+/* Sidebar links smaller and vertically aligned */
+.sidenav .sidenav-link {
+  font-size: 0.9rem;
+  padding: 8px;
+  margin: 5px 0;
+  text-align: center;
+  width: 100%; /* Ensure they take full width */
+}
+
+/* Stack the content and GPT section */
+.main-content {
+  width: 100%;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* Cards grid adjusts */
+.card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+
+}
+
+@media screen and (max-width: 480px) {
+/* Sidebar links collapse to smaller buttons/icons */
+.sidenav .sidenav-link {
+  font-size: 0.8rem;
+  padding: 5px;
+  margin: 2px;
+}
+
+/* Main content and GPT adjust */
+.main-content {
+  margin: 0;
+  padding: 10px;
+}
+
+
+}
+
+/* Smooth Transitions */
+* {
+transition: all 0.3s ease-in-out;
+}

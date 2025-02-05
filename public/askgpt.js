@@ -50,6 +50,17 @@ document.addEventListener("DOMContentLoaded", function () {
           value: status.value,
         }));
 
+
+
+         // Fetch Remote IP Data
+        const remoteIpResponse = await fetch("/remote-ip-data");
+        const remoteIpData = await remoteIpResponse.json();
+        let remoteIpLogs = remoteIpData.map((entry) => ({
+          ip: entry.ip,
+          value: entry.value,
+          timestamp: entry.timestamp,
+        }));
+
         console.log("Formatted Request-Errors for GPT:", requestErrors);
         console.log("Formatted ModSecurity Logs for GPT:", modsecLogs);
         console.log("Formatted Nginx Logs for GPT:", nginxLogs);
@@ -70,6 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
               modsecLogs: modsecLogs,
               nginxLogs: nginxLogs,
               statusCodes: statusCodes, // Add status codes to the data
+              remoteIpData: remoteIpLogs,  // Include remote IP data
             },
           }),
         });
