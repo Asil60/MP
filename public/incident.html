@@ -13,6 +13,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+ 
   <script src="login.js"></script>
   <script src="./ec2.js"></script>
  
@@ -42,10 +44,6 @@
     <a href="#" class="sidenav-link active">
       <span class="icon">🛡️</span> <span class="text">Incident Response</span>
     </a>
-    <a id="downloadPDF" class="sidenav-link">
-      <span class="icon"><i class="fas fa-download"></i></span>
-      <span class="text">Download Report</span>
-    </a>
     <div class ="Account">
       <p><ul><b>Account Page</b></ul></p>
       <a class="sidenav-link">
@@ -59,11 +57,15 @@
     </div>
   </div>
  
-  <!-- Main Content -->
 <!-- Main Content -->
 <div class="main-content">
+  <!-- Incident Container -->
   <div class="incident-container">
     <h2>Incident Ticketing System</h2>
+ 
+    <!-- Button to View Attack Frequency Statistics -->
+    <button id="view-attack-stats-btn" class="view-attack-btn">View Attack Frequency Statistics</button>
+    <button id="downlaodExcelbtn" class="downlaodExcel">Download Excel</button>
  
     <!-- Filter Section -->
     <div class="filter-container">
@@ -76,6 +78,14 @@
       <input type="text" id="filter-input" placeholder="Enter filter value...">
       <button id="apply-filter">Apply Filter</button>
       <button id="clear-filter">Clear Filter</button>
+      <!-- Sorting Section -->
+      <div class="sorting-container">
+        <label for="sort-order">Sort by:</label>
+        <select id="sort-order">
+            <option value="newest">Newest to Oldest</option>
+            <option value="oldest">Oldest to Newest</option>
+        </select>
+      </div>
     </div>
  
     <!-- Table -->
@@ -96,9 +106,10 @@
     <div class="pagination-controls">
       <button id="prev-page" disabled>&laquo; Previous</button>
       <span id="page-info"></span>
+      <input type="number" id="page-input" min="1" style="width: 50px;" placeholder="Page">
+      <button id="go-to-page">Go</button>
       <button id="next-page" disabled>Next &raquo;</button>
     </div>
-  </div>
  
     <!-- Modal for displaying full ticket details -->
     <div id="ticket-modal" class="modal">
@@ -122,7 +133,43 @@
         <button id="resolve-btn" disabled>Mark as Resolved</button>
       </div>
     </div>
+  </div>
+ 
+  <!-- Attack Frequency Statistics Modal -->
+  <div id="attack-stats-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-attack-stats-modal">&times;</span>
+      <h3>Attack Frequency Statistics</h3>
+      <div class="attack-table-container">
+        <h2>📊 Attack Frequency Statistics</h2>
+ 
+        <!-- Time Filter -->
+        <label for="attack-time-filter"><strong>Filter By Time:</strong></label>
+        <select id="attack-time-filter">
+          <option value="1">Last 1 Hour</option>
+          <option value="5">Last 5 Hours</option>
+          <option value="24">Last 24 Hours</option>
+          <option value="48">Last 2 Days</option>
+          <option value="120">Last 5 Days</option>
+        </select>
+ 
+        <table id="attack-frequency-table">
+          <thead>
+            <tr>
+              <th>Attack Type</th>
+              <th>Occurrences</th>
+            </tr>
+          </thead>
+          <tbody id="attack-frequency-body">
+            <!-- Data will be dynamically inserted here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
+ 
+ 
 </div>
 <script>
   // Fetch the family name after the panel page loads
@@ -132,8 +179,85 @@
 </script>
 <script src="./incident.js"></script>
 <script src="./logout.js"></script>
-<script src="./report.js"></script>
 <script src="./alerts.js"></script>
+ 
+<script>
+  // Get modal and button elements
+const viewAttackStatsBtn = document.getElementById('view-attack-stats-btn');
+const attackStatsModal = document.getElementById('attack-stats-modal');
+const closeAttackStatsModal = document.getElementById('close-attack-stats-modal');
+ 
+// Open the modal when button is clicked
+viewAttackStatsBtn.onclick = function() {
+  attackStatsModal.style.display = 'block';
+}
+ 
+// Close the modal when close button is clicked
+closeAttackStatsModal.onclick = function() {
+  attackStatsModal.style.display = 'none';
+}
+ 
+// Close the modal when clicking outside the modal content
+window.onclick = function(event) {
+  if (event.target == attackStatsModal) {
+    attackStatsModal.style.display = 'none';
+  }
+}
+ 
+</script>
 </body>
+ 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+<script>
+  document.getElementById('downlaodExcelbtn').addEventListener('click', function () {
+    // Collecting all tickets from localStorage or your data store
+    const tickets = JSON.parse(localStorage.getItem("incidentTickets")) || [];
+ 
+    // Sorting tickets based on the selected sort order
+    const sortOption = document.getElementById('sort-order').value;
+    applySorting(tickets, sortOption);
+ 
+    // Create the headers for the Excel file
+    const sheetData = [['Ticket ID', 'Type', 'Time', 'IP Address', 'URI', 'Message', 'Status', 'Closing Statement']];
+ 
+    // Add all ticket data to the sheet (even if it's not visible on the current page)
+    tickets.forEach(ticket => {
+      sheetData.push([
+        ticket.id,
+        ticket.type || 'N/A',
+        ticket.time,
+        ticket.ip || 'N/A',
+        ticket.uri || 'N/A',
+        ticket.message || 'N/A',
+        ticket.status,
+        ticket.closingStatement || 'N/A'
+      ]);
+    });
+ 
+    // Create a worksheet from the sheet data
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Incident Tickets');
+ 
+    // Trigger download of the Excel file
+    XLSX.writeFile(wb, 'incident_tickets.xlsx');
+  });
+ 
+  // Function to apply sorting based on the selected option
+  function applySorting(tickets, sortOption) {
+    tickets.sort((a, b) => {
+      if (sortOption === "newest") {
+        return new Date(b.time) - new Date(a.time);
+      } else {
+        return new Date(a.time) - new Date(b.time);
+      }
+    });
+  }
+</script>
+
+ 
+ 
+ 
+ 
  
 </html>

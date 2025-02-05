@@ -15,7 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="login.js"></script>
   <script src="./ec2.js"></script>
-  <script src="./report.js"></script>
+  <script src="./reportB.js"></script>
  
 </head>
 <body>
@@ -43,7 +43,7 @@
     <a href="./incident.html" class="sidenav-link">
       <span class="icon">🛡️</span> <span class="text">Incident Response</span>
     </a>
-    <a id="downloadPDF" class="sidenav-link">
+    <a id="downloadPDFB" class="sidenav-link">
       <span class="icon"><i class="fas fa-download"></i></span>
       <span class="text">Download Report</span>
     </a>
@@ -127,8 +127,8 @@
   <div class="section-container">
     <!-- Timeframe Dropdown -->
     <div class="dropdown-container">
-      <label for="timeframe">Select Timeframe:</label>
-      <select id="timeframe">
+      <label for="timeframeB">Select Timeframe:</label>
+      <select id="timeframeB">
         <option value="live" selected>Live</option>
         <option value="3600">1 Hour</option>
         <option value="7200">2 Hours</option>
@@ -140,17 +140,17 @@
       </select>
     </div>
     <h1>Summary</h1>
-    <div class="value" id="summary">
+    <div class="value" id="summaryb">
       Click the button below to generate a summary.
     </div>
     <!-- GPT Input Section -->
     <div class="gpt-input-section">
       <h2>Ask GPT</h2>
       <textarea
-          id="gpt-input"
+          id="gpt-inputB"
           placeholder="Type your question here and press Enter..."></textarea>
     </div>
-    <button id="generate-summary-button">Generate Summary</button>
+    <button id="generate-summary-buttonb">Generate Summary</button>
   </div>
 </div>
  
@@ -160,7 +160,7 @@
 </div>
  
 <script src="./serverBapp.js"></script>
-<script src="./askgpt.js"></script>
+<script src="./askgptserverB.js"></script>
 <script src="./logout.js"></script>
 <script src="./report.js"></script>
  
@@ -172,11 +172,11 @@
 </script>
 </body>
 <script>
- const API_URL = "https://07op85wb39.execute-api.ap-southeast-1.amazonaws.com/prod/ec2";
+ const API_URL = "https://nl96nx96r7.execute-api.ap-southeast-1.amazonaws.com/Dev1/";
  
 async function fetchEC2Status() {
     const action = "status"; // The action to perform
-    const instanceIds = "i-062ae4e7dfac33f4d"; // Replace with your instance ID
+    const instanceIds = "i-0925ebbd746c1c6df"; // Replace with your instance ID
  
     // Construct the full API URL with query parameters
     const fullUrl = `${API_URL}?action=${encodeURIComponent(action)}&instance_ids=${encodeURIComponent(instanceIds)}`;
@@ -205,7 +205,7 @@ async function fetchEC2Status() {
         // Update the UI based on the instance status
         const instanceStatus = data.instances && data.instances[instanceIds];
         const toggleSwitch = document.getElementById("ec2-toggle");
-        const statusText = document.getElementById("ec2-status");
+        const statusText = document.getElementById("ec2-statusB");
  
         if (instanceStatus === "running") {
             toggleSwitch.checked = true;

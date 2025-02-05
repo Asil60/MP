@@ -651,7 +651,7 @@ input:checked + .slider:before {
 }
  
 /* Input Box */
-#gpt-input {
+#gpt-inputC {
   width: 100%;
   border: 1px solid #444;
   border-radius: 6px;
@@ -665,18 +665,18 @@ input:checked + .slider:before {
   box-sizing: border-box;
 }
  
-#gpt-input:focus {
+#gpt-inputC:focus {
   outline: none;
   border: 1px solid #6842ff;
   box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 4px rgba(104, 66, 255, 0.3);
 }
  
-#gpt-input::placeholder {
+#gpt-inputC::placeholder {
   color: #888;
 }
  
 /* Button Styling */
-#generate-summary-button {
+#generate-summary-buttonc {
   padding: 12px 18px;
   font-size: 1rem;
   background: linear-gradient(145deg, #6842ff, #4e30cc);

@@ -478,6 +478,265 @@ ${nginxLogSummary}
   }
 });
 
+
+
+
+// SERVER A SUMMARY GPT
+
+// OpenAI Summary Endpoint for Server A
+app.post("/summarize-servera", async (req, res) => {
+  try {
+    const { data } = req.body;
+
+    // ✅ Extract & Summarize Docker Status
+    const dockerStatus = data.dockerStatus || "Docker status not available.";
+
+    // ✅ Extract & Summarize CPU, RAM, Root FS, and Uptime
+    const cpuUsage = data.cpuUsage || "CPU usage data not available.";
+    const ramUsage = data.ramUsage || "RAM usage data not available.";
+    const rootFSUsage = data.rootFSUsage || "Root FS usage data not available.";
+    const serverUptime = data.serverUptime || "Server uptime data not available.";
+
+    // ✅ Extract & Summarize Request Errors
+    let requestErrorsSummary = "No request error data available.";
+    if (data.requestsErrors && data.requestsErrors.timestamps.length > 0) {
+      const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
+      const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
+      const avgValue =
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
+        data.requestsErrors.values.length;
+
+      requestErrorsSummary = `
+      - Latest request-error count at ${latestTime}: ${latestValue}
+      - Average request-error count over the past hour: ${avgValue.toFixed(2)}
+      `;
+    }
+
+    // ✅ Extract & Summarize Remote IP Activity
+    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+
+    // ✅ Construct GPT Prompt
+    const prompt = `
+You are an expert system monitoring assistant. Analyze the following system data for Server A:
+- **Docker Status:** ${dockerStatus}
+- **CPU Usage:** ${cpuUsage}
+- **RAM Usage:** ${ramUsage}
+- **Root FS Usage:** ${rootFSUsage}
+- **Server Uptime:** ${serverUptime}
+
+🚨 **Request Errors Trend:**
+${requestErrorsSummary}
+
+🌍 **Remote IP Requests:**
+${remoteIPs}
+
+1️⃣ **Summarize the current state of Server A.**
+2️⃣ Predict what might happen if these trends continue for the next 24 hours.
+3️⃣ Explain what this data means for maintaining optimal system performance in Server A.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and remote IP activity, then suggest solutions.
+5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
+`;
+
+    console.log("Prompt Sent to GPT for Server A:", prompt); // Debugging log
+
+    // ✅ Send Data to OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are a system monitoring assistant." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 350,
+      temperature: 0.7,
+    });
+
+    const summary = response.choices[0].message.content.trim();
+    console.log("GPT Summary Response for Server A:", summary); // Debugging log
+
+    res.json({ summary });
+  } catch (error) {
+    console.error("Error generating summary for Server A:", error.message);
+    res.status(500).send("Failed to generate summary for Server A.");
+  }
+});
+
+
+
+
+
+//SERVER B GPT SUMMARY
+
+
+// OpenAI Summary Endpoint for Server B
+app.post("/summarize-serverb", async (req, res) => {
+  try {
+    const { data } = req.body;
+
+    // ✅ Extract & Summarize Docker Status
+    const dockerStatus = data.dockerStatus || "Docker status not available.";
+
+    // ✅ Extract & Summarize CPU, RAM, Root FS, and Uptime
+    const cpuUsage = data.cpuUsage || "CPU usage data not available.";
+    const ramUsage = data.ramUsage || "RAM usage data not available.";
+    const rootFSUsage = data.rootFSUsage || "Root FS usage data not available.";
+    const serverUptime = data.serverUptime || "Server uptime data not available.";
+
+    // ✅ Extract & Summarize Request Errors
+    let requestErrorsSummary = "No request error data available.";
+    if (data.requestsErrors && data.requestsErrors.timestamps.length > 0) {
+      const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
+      const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
+      const avgValue =
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
+        data.requestsErrors.values.length;
+
+      requestErrorsSummary = `
+      - Latest request-error count at ${latestTime}: ${latestValue}
+      - Average request-error count over the past hour: ${avgValue.toFixed(2)}
+      `;
+    }
+
+    // ✅ Extract & Summarize Remote IP Activity
+    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+
+    // ✅ Construct GPT Prompt
+    const prompt = `
+You are an expert system monitoring assistant. Analyze the following system data for Server B:
+- **Docker Status:** ${dockerStatus}
+- **CPU Usage:** ${cpuUsage}
+- **RAM Usage:** ${ramUsage}
+- **Root FS Usage:** ${rootFSUsage}
+- **Server Uptime:** ${serverUptime}
+
+🚨 **Request Errors Trend:**
+${requestErrorsSummary}
+
+🌍 **Remote IP Requests:**
+${remoteIPs}
+
+1️⃣ **Summarize the current state of Server B.**
+2️⃣ Predict what might happen if these trends continue for the next 24 hours.
+3️⃣ Explain what this data means for maintaining optimal system performance in Server B.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and remote IP activity, then suggest solutions.
+5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
+`;
+
+    console.log("Prompt Sent to GPT for Server B:", prompt); // Debugging log
+
+    // ✅ Send Data to OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are a system monitoring assistant." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 350,
+      temperature: 0.7,
+    });
+
+    const summary = response.choices[0].message.content.trim();
+    console.log("GPT Summary Response for Server B:", summary); // Debugging log
+
+    res.json({ summary });
+  } catch (error) {
+    console.error("Error generating summary for Server B:", error.message);
+    res.status(500).send("Failed to generate summary for Server B.");
+  }
+});
+
+
+
+//SERVER C GPT SUMMARY:
+
+// OpenAI Summary Endpoint for Server C
+app.post("/summarize-serverc", async (req, res) => {
+  try {
+    const { data } = req.body;
+
+    // ✅ Extract & Summarize Docker Status
+    const dockerStatus = data.dockerStatus || "Docker status not available.";
+
+    // ✅ Extract & Summarize CPU, RAM, Root FS, and Uptime
+    const cpuUsage = data.cpuUsage || "CPU usage data not available.";
+    const ramUsage = data.ramUsage || "RAM usage data not available.";
+    const rootFSUsage = data.rootFSUsage || "Root FS usage data not available.";
+    const serverUptime = data.serverUptime || "Server uptime data not available.";
+
+    // ✅ Extract & Summarize Request Errors
+    let requestErrorsSummary = "No request error data available.";
+    if (data.requestsErrors && data.requestsErrors.timestamps.length > 0) {
+      const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
+      const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
+      const avgValue =
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
+        data.requestsErrors.values.length;
+
+      requestErrorsSummary = `
+      - Latest request-error count at ${latestTime}: ${latestValue}
+      - Average request-error count over the past hour: ${avgValue.toFixed(2)}
+      `;
+    }
+
+    // ✅ Extract & Summarize Remote IP Activity
+    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+
+    // ✅ Construct GPT Prompt
+    const prompt = `
+You are an expert system monitoring assistant. Analyze the following system data for Server C:
+- **Docker Status:** ${dockerStatus}
+- **CPU Usage:** ${cpuUsage}
+- **RAM Usage:** ${ramUsage}
+- **Root FS Usage:** ${rootFSUsage}
+- **Server Uptime:** ${serverUptime}
+
+🚨 **Request Errors Trend:**
+${requestErrorsSummary}
+
+🌍 **Remote IP Requests:**
+${remoteIPs}
+
+1️⃣ **Summarize the current state of Server C.**
+2️⃣ Predict what might happen if these trends continue for the next 24 hours.
+3️⃣ Explain what this data means for maintaining optimal system performance in Server C.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and remote IP activity, then suggest solutions.
+5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
+`;
+
+    console.log("Prompt Sent to GPT for Server C:", prompt); // Debugging log
+
+    // ✅ Send Data to OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are a system monitoring assistant." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 350,
+      temperature: 0.7,
+    });
+
+    const summary = response.choices[0].message.content.trim();
+    console.log("GPT Summary Response for Server C:", summary); // Debugging log
+
+    res.json({ summary });
+  } catch (error) {
+    console.error("Error generating summary for Server C:", error.message);
+    res.status(500).send("Failed to generate summary for Server C.");
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.post("/ask-gpt", async (req, res) => {
   try {
     const { question, data } = req.body;
@@ -589,6 +848,248 @@ app.post("/ask-gpt", async (req, res) => {
     res.status(500).json({ error: "Failed to process query." });
   }
 });
+
+
+// USER QUERY GPT SERVER A
+
+// OpenAI Query Endpoint for Server A
+app.post("/askgpt-servera", async (req, res) => {
+  try {
+    const { question, data } = req.body;
+
+    // ✅ Extract Server A System Data
+    const dockerStatus = data.dockerStatus || "Docker status not available.";
+    const cpuUsage = data.cpuUsage || "CPU usage data not available.";
+    const ramUsage = data.ramUsage || "RAM usage data not available.";
+    const rootFSUsage = data.rootFSUsage || "Root FS usage data not available.";
+    const serverUptime = data.serverUptime || "Server uptime data not available.";
+
+    // ✅ Extract Request Errors Data
+    let requestErrorsSummary = "No request error data available.";
+    if (data.requestsErrors && data.requestsErrors.timestamps.length > 0) {
+      const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
+      const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
+      const avgValue =
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
+        data.requestsErrors.values.length;
+
+      requestErrorsSummary = `
+      - Latest request-error count at ${latestTime}: ${latestValue}
+      - Average request-error count over the past hour: ${avgValue.toFixed(2)}
+      `;
+    }
+
+    // ✅ Extract Remote IP Activity
+    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+
+    // ✅ Construct GPT Prompt
+    const prompt = `
+You are an expert system monitoring assistant. Use the following Server A data to answer user queries:
+
+- **Docker Status:** ${dockerStatus}
+- **CPU Usage:** ${cpuUsage}
+- **RAM Usage:** ${ramUsage}
+- **Root FS Usage:** ${rootFSUsage}
+- **Server Uptime:** ${serverUptime}
+
+🚨 **Request Errors:**
+${requestErrorsSummary}
+
+🌍 **Remote IP Activity:**
+${remoteIPs}
+
+📌 **User's Question:** "${question}"
+Provide an accurate and detailed answer based on the provided system data.
+`;
+
+    console.log("Prompt Sent to GPT for Server A Query:", prompt); // Debugging log
+
+    // ✅ Send Data to OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are a system monitoring assistant." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 300,
+      temperature: 0.7,
+    });
+
+    const answer = response.choices[0].message.content.trim();
+    console.log("GPT Response for Server A Query:", answer); // Debugging log
+
+    res.json({ answer });
+  } catch (error) {
+    console.error("Error processing GPT query for Server A:", error.message);
+    res.status(500).send("Failed to process query for Server A.");
+  }
+});
+
+
+
+
+// USER QUERY GPT SERVER B
+
+
+// OpenAI Query Endpoint for Server B
+app.post("/askgpt-serverb", async (req, res) => {
+  try {
+    const { question, data } = req.body;
+
+    // ✅ Extract Server B System Data
+    const dockerStatus = data.dockerStatus || "Docker status not available.";
+    const cpuUsage = data.cpuUsage || "CPU usage data not available.";
+    const ramUsage = data.ramUsage || "RAM usage data not available.";
+    const rootFSUsage = data.rootFSUsage || "Root FS usage data not available.";
+    const serverUptime = data.serverUptime || "Server uptime data not available.";
+
+    // ✅ Extract Request Errors Data
+    let requestErrorsSummary = "No request error data available.";
+    if (data.requestsErrors && data.requestsErrors.timestamps.length > 0) {
+      const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
+      const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
+      const avgValue =
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
+        data.requestsErrors.values.length;
+
+      requestErrorsSummary = `
+      - Latest request-error count at ${latestTime}: ${latestValue}
+      - Average request-error count over the past hour: ${avgValue.toFixed(2)}
+      `;
+    }
+
+    // ✅ Extract Remote IP Activity
+    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+
+    // ✅ Construct GPT Prompt
+    const prompt = `
+You are an expert system monitoring assistant. Use the following Server B data to answer user queries:
+
+- **Docker Status:** ${dockerStatus}
+- **CPU Usage:** ${cpuUsage}
+- **RAM Usage:** ${ramUsage}
+- **Root FS Usage:** ${rootFSUsage}
+- **Server Uptime:** ${serverUptime}
+
+🚨 **Request Errors:**
+${requestErrorsSummary}
+
+🌍 **Remote IP Activity:**
+${remoteIPs}
+
+📌 **User's Question:** "${question}"
+Provide an accurate and detailed answer based on the provided system data.
+`;
+
+    console.log("Prompt Sent to GPT for Server B Query:", prompt); // Debugging log
+
+    // ✅ Send Data to OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are a system monitoring assistant." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 300,
+      temperature: 0.7,
+    });
+
+    const answer = response.choices[0].message.content.trim();
+    console.log("GPT Response for Server B Query:", answer); // Debugging log
+
+    res.json({ answer });
+  } catch (error) {
+    console.error("Error processing GPT query for Server B:", error.message);
+    res.status(500).send("Failed to process query for Server B.");
+  }
+});
+
+
+
+// USER QUERY GPT SERVER C
+
+// OpenAI Query Endpoint for Server C
+app.post("/askgpt-serverc", async (req, res) => {
+  try {
+    const { question, data } = req.body;
+
+    // ✅ Extract Server C System Data
+    const dockerStatus = data.dockerStatus || "Docker status not available.";
+    const cpuUsage = data.cpuUsage || "CPU usage data not available.";
+    const ramUsage = data.ramUsage || "RAM usage data not available.";
+    const rootFSUsage = data.rootFSUsage || "Root FS usage data not available.";
+    const serverUptime = data.serverUptime || "Server uptime data not available.";
+
+    // ✅ Extract Request Errors Data
+    let requestErrorsSummary = "No request error data available.";
+    if (data.requestsErrors && data.requestsErrors.timestamps.length > 0) {
+      const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
+      const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
+      const avgValue =
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
+        data.requestsErrors.values.length;
+
+      requestErrorsSummary = `
+      - Latest request-error count at ${latestTime}: ${latestValue}
+      - Average request-error count over the past hour: ${avgValue.toFixed(2)}
+      `;
+    }
+
+    // ✅ Extract Remote IP Activity
+    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+
+    // ✅ Construct GPT Prompt
+    const prompt = `
+You are an expert system monitoring assistant. Use the following Server C data to answer user queries:
+
+- **Docker Status:** ${dockerStatus}
+- **CPU Usage:** ${cpuUsage}
+- **RAM Usage:** ${ramUsage}
+- **Root FS Usage:** ${rootFSUsage}
+- **Server Uptime:** ${serverUptime}
+
+🚨 **Request Errors:**
+${requestErrorsSummary}
+
+🌍 **Remote IP Activity:**
+${remoteIPs}
+
+📌 **User's Question:** "${question}"
+Provide an accurate and detailed answer based on the provided system data.
+`;
+
+    console.log("Prompt Sent to GPT for Server C Query:", prompt); // Debugging log
+
+    // ✅ Send Data to OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "You are a system monitoring assistant." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 300,
+      temperature: 0.7,
+    });
+
+    const answer = response.choices[0].message.content.trim();
+    console.log("GPT Response for Server C Query:", answer); // Debugging log
+
+    res.json({ answer });
+  } catch (error) {
+    console.error("Error processing GPT query for Server C:", error.message);
+    res.status(500).send("Failed to process query for Server C.");
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 
 app.get("/cpu-usage-range", async (req, res) => {
@@ -1271,32 +1772,7 @@ app.get("/requests-networktrafficA", async (req, res) => {
   }
 });
  
-// Endpoint for Nodejs Status
-app.get("/nodejs-statusA", async (req, res) => {
-  try {
-    const query = `up{job="node_app", instance="10.0.2.208:3000"}`;
- 
-    const response = await axios.get(GRAFANA_API_URLA, {
-      params: { query },
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-      },
-    });
- 
-    const result = response.data.data.result;
- 
-    // Check if there's a valid result
-    if (result.length > 0) {
-      const nodejsStatus = parseFloat(result[0].value[1]); // Get the status value (1 or 0)
-      res.json({ status: nodejsStatus });
-    } else {
-      res.json({ status: 0 }); // Return 0 if no result found
-    }
-  } catch (error) {
-    console.error("Error fetching Nodejs status:", error.message);
-    res.status(500).send("Failed to fetch Nodejs status.");
-  }
-});
+
  
 // Endpoint for Docker Status
 app.get("/docker-statusA", async (req, res) => {
@@ -1326,10 +1802,168 @@ app.get("/docker-statusA", async (req, res) => {
 });
 
 
+// Function to determine step size based on range
+function getStepSize(start, end) {
+  const range = end - start;
+  if (range > 7 * 24 * 3600) return 86400; // 1 day for > 7 days
+  if (range > 2 * 24 * 3600) return 3600; // 1 hour for > 2 days
+  if (range > 3600) return 300; // 5 minutes for > 1 hour
+  return 10; // 10 seconds for short ranges
+}
 
-  
+// ✅ CPU Usage - Range
+app.get("/cpu-usageservera-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="10.0.2.208:9100"}[1m])))';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEA, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({ success: true, data: result[0].values.map(entry => ({ timestamp: entry[0], value: parseFloat(entry[1]) })) });
+  } catch (error) {
+    console.error("Error fetching CPU usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch CPU usage range data." });
+  }
+});
+
+// ✅ RAM Usage - Range with Average Calculation
+app.get("/ram-usageservera-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 * (1 - (node_memory_MemAvailable_bytes{instance="10.0.2.208:9100"} / node_memory_MemTotal_bytes{instance="10.0.2.208:9100"}))';
+    
+    const response = await axios.get(GRAFANA_API_URL_RANGEA, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    // Extract values and compute the average RAM usage
+    const ramValues = result[0].values.map(entry => parseFloat(entry[1]));
+    const averageRAM = ramValues.reduce((sum, val) => sum + val, 0) / ramValues.length;
+
+    res.json({
+      success: true,
+      average: parseFloat(averageRAM.toFixed(2)), // Rounded to 2 decimal places
+      data: result[0].values.map(entry => ({
+        timestamp: entry[0],
+        value: parseFloat(entry[1])
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching RAM usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch RAM usage range data." });
+  }
+});
 
 
+// ✅ Root FS Usage - Range
+app.get("/root-fs-usageservera-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 - ((node_filesystem_avail_bytes{instance="10.0.2.208:9100", mountpoint="/", fstype!="rootfs"} * 100) / node_filesystem_size_bytes{instance="10.0.2.208:9100", mountpoint="/", fstype!="rootfs"})';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEA, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({ success: true, data: result[0].values.map(entry => ({ timestamp: entry[0], value: parseFloat(entry[1]) })) });
+  } catch (error) {
+    console.error("Error fetching Root FS usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Root FS usage range data." });
+  }
+});
+
+// ✅ Requests & Errors Over Time - Range
+app.get("/requests-errorsservera-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = 'irate(node_network_receive_errs_total{instance="10.0.2.208:9100"}[5m])';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEA, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({
+      success: true,
+      data: result.map((item) => ({
+        timestamps: item.values.map(entry => new Date(entry[0] * 1000).toLocaleString()),
+        values: item.values.map(entry => parseFloat(entry[1])),
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching Requests & Errors range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Requests & Errors range data." });
+  }
+});
+
+// ✅ Network Traffic Over Time - Range
+app.get("/requests-networktrafficA-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = 'irate(node_network_receive_packets_total{instance="10.0.2.208:9100"}[5m])';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEA, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({
+      success: true,
+      data: result.map((item) => ({
+        name: Object.values(item.metric).join(" - "),
+        timestamps: item.values.map(entry => new Date(entry[0] * 1000).toLocaleString()),
+        values: item.values.map(entry => parseFloat(entry[1])),
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching Network Traffic range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Network Traffic range data." });
+  }
+});
+
+
+
+ 
 
   
   
@@ -1567,33 +2201,6 @@ app.get("/requests-networktrafficB", async (req, res) => {
   }
 });
  
-// Endpoint for Nodejs Status
-app.get("/nodejs-statusB", async (req, res) => {
-  try {
-    const query = `up{job="node_app", instance="10.0.3.229:3000"}`;
- 
-    const response = await axios.get(GRAFANA_API_URLB, {
-      params: { query },
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-      },
-    });
- 
-    const result = response.data.data.result;
- 
-    // Check if there's a valid result
-    if (result.length > 0) {
-      const nodejsStatus = parseFloat(result[0].value[1]); // Get the status value (1 or 0)
-      res.json({ status: nodejsStatus });
-    } else {
-      res.json({ status: 0 }); // Return 0 if no result found
-    }
-  } catch (error) {
-    console.error("Error fetching Nodejs status:", error.message);
-    res.status(500).send("Failed to fetch Nodejs status.");
-  }
-});
- 
  
 // Endpoint for Docker Status
 app.get("/docker-statusB", async (req, res) => {
@@ -1626,7 +2233,7 @@ app.get("/docker-statusB", async (req, res) => {
 
 
 
-  //SERVER C
+
   //SERVER C
  
 // Endpoint for CPU usage
@@ -1855,32 +2462,6 @@ app.get("/requests-networktrafficC", async (req, res) => {
 });
  
  
-// Endpoint for Nginx Status
-app.get("/nodejs-statusC", async (req, res) => {
-  try {
-    const query = `up{job="node_app", instance="10.0.4.85:3000"}`;
- 
-    const response = await axios.get(GRAFANA_API_URLC, {
-      params: { query },
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-      },
-    });
- 
-    const result = response.data.data.result;
- 
-    // Check if there's a valid result
-    if (result.length > 0) {
-      const nodejsStatus = parseFloat(result[0].value[1]); // Get the status value (1 or 0)
-      res.json({ status: nodejsStatus });
-    } else {
-      res.json({ status: 0 }); // Return 0 if no result found
-    }
-  } catch (error) {
-    console.error("Error fetching Nodejs status:", error.message);
-    res.status(500).send("Failed to fetch Nodejs status.");
-  }
-});
  
  
 // Endpoint for Docker Status

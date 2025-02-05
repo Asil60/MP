@@ -254,87 +254,76 @@ function getRandomColor() {
 }
  
  
-// Function to fetch Summary using OpenAI
-async function fetchSummary() {
+// Function to fetch Summary for Server C using OpenAI
+async function fetchServerCSummary() {
     try {
-        // Display loading text
-        document.getElementById("summary").innerHTML = "<p>Generating summary...</p>";
- 
-        // Prepare the data to be summarized
-        const data = {
-            nginxStatus: document.getElementById("nginx-statusC").textContent || "N/A",
-            cpuUsage: document.getElementById("cpu-usageC").textContent || "N/A",
-            ramUsage: document.getElementById("ram-usageC").textContent || "N/A",
-            rootFSUsage: document.getElementById("root-fs-usageC").textContent || "N/A",
-            serverUptime: document.getElementById("server-uptimeC").textContent || "N/A",
-            networkTrafficChart: document.getElementById("networkTrafficChartC").textContent || "N/A",
-        };
- 
-        // Fetch Request Error Data
-        const requestErrorResponse = await fetch("/requests-errorsserverc");
-        const requestErrorData = await requestErrorResponse.json();
-        if (requestErrorData.data && requestErrorData.data.length > 0) {
-            data.requestsErrors = requestErrorData.data[0]; // Extract first dataset
-        } else {
-            data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
-        }
- 
-        // 🔹 Debugging: Log the data before sending
-        console.log("Summary Data Sent to Backend:", JSON.stringify(data, null, 2));
- 
-        // Send data to the backend for summarization
-        const summaryResponse = await fetch("/summarize", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ data }), // Send full data
-        });
- 
-        const result = await summaryResponse.json();
-        if (!result.summary) throw new Error("No summary returned.");
- 
-        // 🔹 Debugging: Log the GPT-generated summary
-        console.log("GPT Summary Received:", result.summary);
- 
-        // Format the summary into an ordered list
-        const formattedSummary = result.summary
-            .split(/\d\.\s+/) // Split on "1. ", "2. ", etc.
-            .filter((item) => item.trim() !== "") // Remove empty items
-            .map((item) => `<li>${item.trim()}</li>`) // Wrap each sentence in <li>
-            .join(""); // Join all list items into a single string
- 
-        document.getElementById("summary").innerHTML = `<ol>${formattedSummary}</ol>`;
+      // Display loading text
+      document.getElementById("summaryc").innerHTML = "<p>Generating summary...</p>";
+  
+      // Prepare the data for Server C to be summarized
+      const data = {
+        dockerStatus: document.getElementById("docker-statusC").textContent || "N/A",
+        cpuUsage: document.getElementById("cpu-usageC").textContent || "N/A",
+        ramUsage: document.getElementById("ram-usageC").textContent || "N/A",
+        rootFSUsage: document.getElementById("root-fs-usageC").textContent || "N/A",
+        serverUptime: document.getElementById("server-uptimeC").textContent || "N/A",
+      };
+  
+      // Fetch Request Error Data for Server C
+      const requestErrorResponse = await fetch("/requests-errorsserverc");
+      const requestErrorData = await requestErrorResponse.json();
+      if (requestErrorData.data && requestErrorData.data.length > 0) {
+        data.requestsErrors = requestErrorData.data[0]; // Extract first dataset
+      } else {
+        data.requestsErrors = { timestamps: [], values: [] }; // Default empty dataset
+      }
+  
+      // Fetch Remote IP Data for Server C
+      const remoteIPResponse = await fetch("/remote-ip-data");
+      const remoteIPData = await remoteIPResponse.json();
+      data.remoteIPs = remoteIPData.length
+        ? remoteIPData.map((ip) => `${ip.ip} - ${ip.value} requests at ${ip.timestamp}`).join(", ")
+        : "No remote IP activity detected.";
+  
+      // 🔹 Debugging: Log the data before sending
+      console.log("Server C Summary Data Sent to Backend:", JSON.stringify(data, null, 2));
+  
+      // Send data to the backend for summarization
+      const summaryResponse = await fetch("/summarize-serverc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ data }), // Send full data
+      });
+  
+      const result = await summaryResponse.json();
+      if (!result.summary) throw new Error("No summary returned.");
+  
+      // 🔹 Debugging: Log the GPT-generated summary
+      console.log("GPT Summary Received for Server C:", result.summary);
+  
+      // Format the summary into an ordered list
+      const formattedSummary = result.summary
+        .split(/\d\.\s+/) // Split on "1. ", "2. ", etc.
+        .filter((item) => item.trim() !== "") // Remove empty items
+        .map((item) => `<li>${item.trim()}</li>`) // Wrap each sentence in <li>
+        .join(""); // Join all list items into a single string
+  
+      document.getElementById("summaryc").innerHTML = `<ol>${formattedSummary}</ol>`;
     } catch (error) {
-        console.error("Error fetching insights:", error);
-        document.getElementById("summary").innerHTML =
-            "<p style='color: red;'>Error generating insights. Please try again.</p>";
-    }
-}
- 
-// Add event listener to the button
-document.getElementById("generate-summary-button").addEventListener("click", fetchSummary);
- 
- 
-// Function to fetch Nodejs status
-async function fetchNodeJsStatus() {
-    try {
-      const response = await fetch("/nodejs-statusC");
-      const data = await response.json();
- 
-      if (data.status === undefined) throw new Error("No Nodejs status data available.");
- 
-      const nodejsStatus = data.status === 1 ? "ON" : "OFF";
-      document.getElementById("nodejs-statusC").textContent = nodejsStatus;
- 
-      const now = new Date();
-      document.getElementById("nodejs-refresh-timeC").textContent = `Last updated at ${now.toLocaleTimeString()}`;
-    } catch (error) {
-      console.error("Error fetching Nodejs status:", error);
-      document.getElementById("nodejs-statusC").textContent = "Error fetching data.";
-      document.getElementById("nodejs-refresh-timeC").textContent = "";
+      console.error("Error fetching insights for Server C:", error);
+      document.getElementById("summaryc").innerHTML =
+        "<p style='color: red;'>Error generating insights. Please try again.</p>";
     }
   }
+  
+  // Add event listener to the Server C summary button
+  document
+    .getElementById("generate-summary-buttonc")
+    .addEventListener("click", fetchServerCSummary);
+  
+ 
  
  
  
@@ -365,7 +354,6 @@ setInterval(fetchRootFSUsage, 10000);
 setInterval(fetchServerUptime, 10000);
 setInterval(fetchAndUpdateChart, 10000);
 setInterval(fetchAndUpdateNetworkTrafficChart, 10000);
-setInterval(fetchNodeJsStatus, 10000)
 setInterval(fetchDockerStatus, 10000);
  
  
@@ -376,5 +364,4 @@ setInterval(fetchDockerStatus, 10000);
   fetchServerUptime();
   fetchAndUpdateChart();
   fetchAndUpdateNetworkTrafficChart();
-  fetchNodeJsStatus();
   fetchDockerStatus();

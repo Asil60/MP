@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const { jsPDF } = window.jspdf;
-    const API_KEY = "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"; // Replace with your GPT API key
+    const API_KEY = "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";
     const GPT_URL = "https://api.openai.com/v1/chat/completions";
  
-    document.getElementById("downloadPDF").addEventListener("click", async () => {
+    document.getElementById("downloadPDFA").addEventListener("click", async () => {
         try {
             const pdf = new jsPDF("p", "mm", "a4");
  
@@ -41,61 +41,40 @@ document.addEventListener("DOMContentLoaded", function () {
  
             pdf.addPage(); // Add a new page for the main content
  
-            // 🔹 System Metrics Section
+            // 🔹 System Metrics Section (Server A)
             pdf.setFontSize(22);
             pdf.setFont("helvetica", "bold");
             pdf.setTextColor(0, 102, 204);
-            pdf.text("System Metrics", 10, 20);
+            pdf.text("Server A Metrics", 10, 20);
  
-            const systemMetrics = [
+            const serverAMetrics = [
                 ["Metric", "Value"],
-                ["EC2 Instance Status", document.getElementById("ec2-status")?.innerText || "N/A"],
-                ["Nginx Status", document.getElementById("nginx-status")?.innerText || "N/A"],
-                ["CPU Usage", document.getElementById("cpu-usage")?.innerText || "N/A"],
-                ["RAM Usage", document.getElementById("ram-usage")?.innerText || "N/A"],
-                ["Root FS Used", document.getElementById("root-fs-usage")?.innerText || "N/A"],
-                ["Server Uptime", document.getElementById("server-uptime")?.innerText || "N/A"],
+                ["EC2 Instance Status", document.getElementById("ec2-statusA")?.innerText || "N/A"],
+                ["Docker Status", document.getElementById("docker-statusA")?.innerText || "N/A"],
+                ["Docker Refresh Time", document.getElementById("docker-refresh-timeA")?.innerText || "N/A"],
+                ["CPU Usage", document.getElementById("cpu-usageA")?.innerText || "N/A"],
+                ["CPU Refresh Time", document.getElementById("cpu-refresh-timeA")?.innerText || "N/A"],
+                ["RAM Usage", document.getElementById("ram-usageA")?.innerText || "N/A"],
+                ["RAM Refresh Time", document.getElementById("ram-refresh-timeA")?.innerText || "N/A"],
+                ["Root FS Usage", document.getElementById("root-fs-usageA")?.innerText || "N/A"],
+                ["Root FS Refresh Time", document.getElementById("root-fs-refresh-timeA")?.innerText || "N/A"],
+                ["Server Uptime", document.getElementById("server-uptimeA")?.innerText || "N/A"],
+                ["Uptime Refresh Time", document.getElementById("uptime-refresh-timeA")?.innerText || "N/A"],
             ];
  
             pdf.autoTable({
                 startY: 30,
-                head: [systemMetrics[0]],
-                body: systemMetrics.slice(1),
+                head: [serverAMetrics[0]],
+                body: serverAMetrics.slice(1),
                 theme: "grid", // Full grid for better segmentation
                 headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
                 bodyStyles: { fontSize: 10 },
             });
  
-            // 🔹 Data Refresh Times Section
-            pdf.addPage();
-            pdf.setFontSize(22);
-            pdf.setFont("helvetica", "bold");
-            pdf.setTextColor(0, 102, 204);
-            pdf.text("Data Refresh Times", 10, 20);
- 
-            const refreshTimes = [
-                ["Metric", "Last Updated"],
-                ["Nginx Refresh Time", document.getElementById("nginx-refresh-time")?.innerText || "N/A"],
-                ["CPU", document.getElementById("cpu-refresh-time")?.innerText || "N/A"],
-                ["RAM", document.getElementById("ram-refresh-time")?.innerText || "N/A"],
-                ["Root FS", document.getElementById("root-fs-refresh-time")?.innerText || "N/A"],
-                ["Server Uptime", document.getElementById("uptime-refresh-time")?.innerText || "N/A"],
-            ];
- 
-            pdf.autoTable({
-                startY: 30,
-                head: [refreshTimes[0]],
-                body: refreshTimes.slice(1),
-                theme: "grid", // Full grid
-                headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                bodyStyles: { fontSize: 10 },
-            });
- 
-            // 🔹 Chart Section (with Real Data and Image)
+            // 🔹 Chart Section (Server A)
             const charts = [
-                { id: "requestsErrorsChart", title: "Requests & Errors Over Time" },
-                { id: "statusChart", title: "Nginx Status Over Time" },
-                { id: "ipChart", title: "IP Traffic Over Time" },
+                { id: "requestsErrorsChartA", title: "Requests & Errors Over Time (Server A)" },
+                { id: "networkTrafficChartA", title: "Network Traffic Over Time (Server A)" },
             ];
  
             for (const chart of charts) {
@@ -108,71 +87,57 @@ document.addEventListener("DOMContentLoaded", function () {
                     pdf.text(chart.title, 10, 20);
  
                     const chartData = extractChartData(chartElement);
-                    pdf.autoTable({
-                        startY: 30,
-                        head: [["Label", "Value"]],
-                        body: chartData,
-                        theme: "grid",
-                        headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                        bodyStyles: { fontSize: 10 },
-                    });
  
-                    const currentY = pdf.lastAutoTable.finalY + 10;
-                    const chartHeight = 100; // Chart height
-                    const chartImage = chartElement.toDataURL("image/png");
+                    if (chart.id === "networkTrafficChartA") {
+                        const chartImage = chartElement.toDataURL("image/png");
+                        const chartHeight = 100; // Chart height
+                        const currentY = 30; // Chart Y position
  
-                    // Check if there's enough space for the image on the current page
-                    if (currentY + chartHeight > pageHeight) {
-                        pdf.addPage();
-                        pdf.addImage(chartImage, "PNG", 10, 20, 190, chartHeight);
-                    } else {
                         pdf.addImage(chartImage, "PNG", 10, currentY, 190, chartHeight);
+ 
+                        chartData.datasets.forEach((dataset, index) => {
+                            pdf.addPage();
+                            pdf.setFontSize(14);
+                            pdf.setFont("helvetica", "bold");
+                            pdf.text(`Network Traffic Data - ${dataset.label}`, 10, 20);
+ 
+                            pdf.autoTable({
+                                startY: 30,
+                                head: [["Label", "Value"]],
+                                body: dataset.data.map((value, idx) => [
+                                    chartData.labels[idx],
+                                    value,
+                                ]),
+                                theme: "grid",
+                                headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
+                                bodyStyles: { fontSize: 10 },
+                            });
+                        });
+                    } else {
+                        pdf.autoTable({
+                            startY: 30,
+                            head: [["Label", "Value"]],
+                            body: chartData.datasets[0].data.map((value, index) => [
+                                chartData.labels[index],
+                                value,
+                            ]),
+                            theme: "grid",
+                            headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
+                            bodyStyles: { fontSize: 10 },
+                        });
+ 
+                        const currentY = pdf.lastAutoTable.finalY + 10;
+                        const chartHeight = 100; // Chart height
+                        const chartImage = chartElement.toDataURL("image/png");
+ 
+                        if (currentY + chartHeight > pageHeight) {
+                            pdf.addPage();
+                            pdf.addImage(chartImage, "PNG", 10, 20, 190, chartHeight);
+                        } else {
+                            pdf.addImage(chartImage, "PNG", 10, currentY, 190, chartHeight);
+                        }
                     }
                 }
-            }
- 
-            // 🔹 Logs Section
-            pdf.addPage();
-            pdf.setFontSize(22);
-            pdf.setFont("helvetica", "bold");
-            pdf.setTextColor(0, 102, 204);
-            pdf.text("ModSecurity Logs", 10, 20);
- 
-            const modSecurityRows = await getTableRows("modsecurity-logs");
-            if (modSecurityRows.length > 0) {
-                pdf.autoTable({
-                    startY: 30,
-                    head: [["#", "Client IP", "Timestamp", "Request", "Rule ID", "Details"]],
-                    body: modSecurityRows,
-                    theme: "grid", // Full grid for log segmentation
-                    headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                    bodyStyles: { fontSize: 10 },
-                });
-            } else {
-                pdf.setFontSize(14);
-                pdf.text("No ModSecurity logs available.", 10, 30);
-            }
- 
-            // 🔹 NGINX Logs Section
-            pdf.addPage();
-            pdf.setFontSize(22);
-            pdf.setFont("helvetica", "bold");
-            pdf.setTextColor(0, 102, 204);
-            pdf.text("NGINX Logs", 10, 20);
- 
-            const nginxRows = await getTableRows("nginx-logs");
-            if (nginxRows.length > 0) {
-                pdf.autoTable({
-                    startY: 30,
-                    head: [["#", "Time", "Remote Address", "Status", "Method", "Details"]],
-                    body: nginxRows,
-                    theme: "grid", // Full grid
-                    headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                    bodyStyles: { fontSize: 10 },
-                });
-            } else {
-                pdf.setFontSize(14);
-                pdf.text("No NGINX logs available.", 10, 30);
             }
  
             // 🔹 GPT Insights Section
@@ -182,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
             pdf.setTextColor(0, 102, 204);
             pdf.text("AI-Powered Insights", 10, 20);
  
-            const gptInsights = await generateGPTInsights(systemMetrics); // Pass metrics to GPT
+            const gptInsights = await generateGPTInsights(serverAMetrics);
             const paragraphs = gptInsights.split("\n\n"); // Split insights into paragraphs
             let y = 30;
  
@@ -212,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
  
             // Save the PDF
-            pdf.save("Lumiere_Proxy_RP_Report.pdf");
+            pdf.save("Lumiere_Proxy_ServerA_Report.pdf");
         } catch (error) {
             console.error("Error generating PDF:", error);
             alert("An error occurred while generating the report. Please try again.");
@@ -282,40 +247,14 @@ document.addEventListener("DOMContentLoaded", function () {
  
     function extractChartData(chartElement) {
         const chartInstance = Chart.getChart(chartElement); // Assumes Chart.js instance
-        if (!chartInstance) return [];
+        if (!chartInstance) return { labels: [], datasets: [] };
  
         const labels = chartInstance.data.labels;
-        const datasets = chartInstance.data.datasets;
+        const datasets = chartInstance.data.datasets.map((dataset) => ({
+            label: dataset.label,
+            data: dataset.data,
+        }));
  
-        const data = [];
-        datasets.forEach((dataset) => {
-            dataset.data.forEach((value, index) => {
-                data.push([labels[index], value]);
-            });
-        });
- 
-        return data;
-    }
- 
-    async function getTableRows(tableId) {
-        const table = document.getElementById(tableId);
-        if (!table) return [];
- 
-        const rows = [];
-        const tableRows = table.querySelectorAll("tr");
- 
-        for (let row of tableRows) {
-            const cells = row.querySelectorAll("td, th");
-            const rowData = [];
- 
-            for (let cell of cells) {
-                let text = cell.textContent.trim();
-                text = text.replace(/[^\x20-\x7E]/g, ""); // Removes non-ASCII characters
-                rowData.push(text);
-            }
-            rows.push(rowData);
-        }
- 
-        return rows;
+        return { labels, datasets };
     }
 });

@@ -1,26 +1,77 @@
+/* Styling for the alert container */
 #alert-container {
   margin: 20px;
   padding: 15px;
-  background-color: #222;
+  background-color: #2d2a40; /* Updated background for better contrast */
   color: white;
-  border-radius: 5px;
-  height: 1000px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adds depth */
+  height: 840px; /* Adjusted for a more compact view */
+  overflow: hidden; /* Ensure scroll behavior works well */
 }
-
+ 
+/* Scrollable alert box */
+#alert-box {
+  height: calc(100% - 40px); /* Adjust height dynamically */
+  overflow-y: auto; /* Enables vertical scrolling */
+  padding-right: 10px; /* Space for scrollbar */
+  margin-top: 10px;
+ 
+}
+ 
+/* Styling for individual alerts */
 .alert {
-  background: red;
+  background: linear-gradient(90deg, #ff5757, #d92626);
   color: white;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 5px;
+  padding: 15px;
+  margin: 10px auto; /* Center each alert horizontally */
+  border-radius: 8px;
   font-size: 16px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 96%; /* Reduce the width of the alert box */
+  position: relative; /* Ensures z-index works */
+  z-index: 1; /* Default z-index */
 }
-
-.alert-box{
-    height: 1000px;
+ 
+/* Styling for the header box */
+#alert-container h2 {
+  margin: 0;
+  padding: 15px;
+  background-color: #3b3a55; /* Color for the header box */
+  color: #ffcc00; /* Bright text color for contrast */
+  font-size: 40px;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-align: center; /* Center the text */
 }
-
-
+ 
+.alert:hover {
+  transform: scale(1.02); /* Slight zoom on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* More shadow on hover */
+}
+ 
+/* Scrollbar styling */
+#alert-box::-webkit-scrollbar {
+  width: 8px;
+}
+ 
+#alert-box::-webkit-scrollbar-thumb {
+  background: #6c63ff; /* Scroll thumb color */
+  border-radius: 4px;
+}
+ 
+#alert-box::-webkit-scrollbar-thumb:hover {
+  background: #574dcf; /* Darker thumb on hover */
+}
+ 
+#alert-box::-webkit-scrollbar-track {
+  background: #1e1b2e; /* Track color */
+}
+ 
+ 
 /* General Styles */
 body {
 font-family: Arial, sans-serif;
@@ -33,14 +84,14 @@ flex-direction: column;
 height: 100%;
 width: 100%;
 }
-
+ 
 /* Layout Container */
 .layout-container {
 display: flex;
 width: 100%;
 height: 100%;
 }
-
+ 
 /* Sidebar */
 .sidenav {
 position: fixed; /* Fixed position to stay on the side */
@@ -54,13 +105,13 @@ width: 250px; /* Fixed width */
 box-sizing: border-box;
 overflow-y: auto; /* Allow scrolling if content overflows */
 }
-
+ 
 /* Sidebar Header */
 .sidenav h2 {
 font-size: 1.2rem;
 margin-bottom: 20px;
 }
-
+ 
 /* Sidebar Links */
 .sidenav .sidenav-link {
 display: flex;
@@ -73,7 +124,7 @@ border-radius: 5px;
 background-color: #2a2a3f; /* Neutral button background */
 transition: background-color 0.3s ease, color 0.3s ease;
 }
-
+ 
 /* Alternative Link Style */
 .sidenav-link1 {
 display: flex;
@@ -87,32 +138,32 @@ border-radius: 5px;
 background-color: #613b96; /* Neutral button background */
 transition: background-color 0.3s ease, color 0.3s ease;
 }
-
+ 
 /* Active Sidebar Link */
 .sidenav .sidenav-link.active {
 background-color: #6842ff; /* Highlighted active state */
 color: #fff;
 font-weight: bold;
 }
-
+ 
 /* Hover Effect */
 .sidenav .sidenav-link:hover {
 background-color: #3b3b5c;
 color: #fff;
 }
-
+ 
 /* Sidebar Icons */
 .sidenav .sidenav-link .icon {
 margin-right: 10px;
 font-size: 1.2rem;
 }
-
+ 
 /* Account Section */
 .Account {
 margin-bottom: 10%;
 }
-
-
+ 
+ 
 /* Main Content */
 .main-content {
 margin-left: 250px; /* Same as the sidebar width */
@@ -123,38 +174,38 @@ flex-grow: 1;
 min-width: 0; /* Ensure it doesn't overflow */
 box-sizing: border-box; /* Include padding in width calculation */
 }
-
+ 
 .card-grid {
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Auto-fit with a minimum width */
 gap: 10px;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 /* General Responsive Adjustments */
 @media screen and (max-width: 1024px) {
 .layout-container {
   flex-direction: column; /* Stack sidebar and content vertically */
 }
-
+ 
  /* Sidebar moves to top and becomes a column */
  .sidenav {
   position: relative;
@@ -167,7 +218,7 @@ gap: 10px;
   gap: 10px; /* Add space between items */
   margin-bottom: 10px; /* Add space between sidebar and content */
 }
-
+ 
 /* Sidebar links align vertically */
 .sidenav .sidenav-link {
   padding: 10px;
@@ -176,8 +227,8 @@ gap: 10px;
   font-size: 1rem;
   width: 100%; /* Ensure full width */
 }
-
-
+ 
+ 
 /* Main content takes full width */
 .main-content {
   margin-left: 0;
@@ -185,13 +236,13 @@ gap: 10px;
   flex: 1;
 }
 }
-
+ 
 @media screen and (max-width: 768px) {
 /* Sidebar becomes a top navbar */
 .layout-container {
   flex-direction: column; /* Stack sidebar and content vertically */
 }
-
+ 
 .sidenav {
   width: 100%;
   padding: 8px;
@@ -200,7 +251,7 @@ gap: 10px;
   flex-direction: column; /* Stack items vertically */
   gap: 10px;
 }
-
+ 
 /* Sidebar links smaller and vertically aligned */
 .sidenav .sidenav-link {
   font-size: 0.9rem;
@@ -209,23 +260,23 @@ gap: 10px;
   text-align: center;
   width: 100%; /* Ensure they take full width */
 }
-
+ 
 /* Stack the content and GPT section */
 .main-content {
   width: 100%;
   margin: 0 auto;
   padding: 10px;
 }
-
+ 
 /* Cards grid adjusts */
 .card-grid {
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px;
 }
-
-
+ 
+ 
 }
-
+ 
 @media screen and (max-width: 480px) {
 /* Sidebar links collapse to smaller buttons/icons */
 .sidenav .sidenav-link {
@@ -233,16 +284,16 @@ gap: 10px;
   padding: 5px;
   margin: 2px;
 }
-
+ 
 /* Main content and GPT adjust */
 .main-content {
   margin: 0;
   padding: 10px;
 }
-
-
+ 
+ 
 }
-
+ 
 /* Smooth Transitions */
 * {
 transition: all 0.3s ease-in-out;
