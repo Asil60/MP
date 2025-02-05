@@ -382,17 +382,20 @@ function getRandomColor() {
 
 
 
-// Function to fetch and update Network Traffic chart
-async function fetchAndUpdateNetworkTrafficChartARange(start = null) {
+// ✅ Function to fetch and update Network Traffic chart for selected timeframe
+async function fetchAndUpdateNetworkTrafficChartARange(start) {
   try {
       if (!isLiveModeActiveA && !start) return;
 
-      const endpoint = start ? `/requests-networktrafficA-range?start=${start}` : "/requests-networktrafficA";
+      const endpoint = `/requests-networktrafficA-range?start=${start}`;
       const response = await fetch(endpoint);
       const responseData = await response.json();
+
       if (!responseData.success) throw new Error(responseData.error || "No data available.");
 
       const data = responseData.data;
+
+      // ✅ Extract timestamps and datasets
       const timestamps = data[0]?.timestamps || [];
       const datasets = data.map((dataset) => ({
           label: dataset.name,
@@ -407,13 +410,18 @@ async function fetchAndUpdateNetworkTrafficChartARange(start = null) {
       if (!ctx) return;
 
       if (networkTrafficChart) {
+          // ✅ Update existing chart
           networkTrafficChart.data.labels = timestamps;
           networkTrafficChart.data.datasets = datasets;
           networkTrafficChart.update();
       } else {
+          // ✅ Create new chart if not exists
           networkTrafficChart = new Chart(ctx, {
               type: "line",
-              data: { labels: timestamps, datasets: datasets },
+              data: {
+                  labels: timestamps,
+                  datasets: datasets,
+              },
               options: {
                   responsive: true,
                   plugins: {
@@ -427,16 +435,19 @@ async function fetchAndUpdateNetworkTrafficChartARange(start = null) {
               },
           });
       }
+
+      // ✅ Update the refresh time
       document.getElementById("ip-refresh-timeA").textContent = `Last updated at ${new Date().toLocaleTimeString()}`;
   } catch (error) {
       console.error("Error updating the Network Traffic chart:", error);
   }
 }
 
-// Function to generate random colors for datasets
+// ✅ Function to generate random colors for datasets
 function getRandomColor() {
   return `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)})`;
 }
+
 
 
 
@@ -579,6 +590,7 @@ document.getElementById("timeframeA").addEventListener("change", function () {
     fetchRAMUsageARange(start);
     fetchRootFSUsageARange(start);
     fetchAndUpdateChartARange(start);
+    fetchAndUpdateNetworkTrafficChartARange(start)
   }
 });
 
