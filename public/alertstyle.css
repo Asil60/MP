@@ -94,28 +94,38 @@ height: 100%;
  
 /* Sidebar */
 .sidenav {
-position: fixed; /* Fixed position to stay on the side */
-left: 0;
-top: 0;
-background-color: #181830; /* Dark purple-blue background */
-color: #b0b3c5; /* Light gray text */
-padding: 20px;
-height: 100vh; /* Full height */
-width: 250px; /* Fixed width */
-box-sizing: border-box;
-overflow-y: auto; /* Allow scrolling if content overflows */
+  position: fixed; /* Fixed position to stay on the side */
+  left: 0;
+  top: 0;
+  background-color: #181830; /* Dark purple-blue background */
+  color: #b0b3c5; /* Light gray text */
+  padding: 20px;
+  height: 100vh; /* Full height */
+  width: 250px; /* Fixed width */
+  box-sizing: border-box;
+ 
+}
+ 
+/* Sidebar Header */
+.dashboard-image {
+  width: 70px;   /* Adjust the size to your needs */
+  height: 70px;  /* Adjust the size to your needs */
+  margin-bottom: 10px;  /* Add some space below the image */
+  margin-left: 65px;
 }
  
 /* Sidebar Header */
 .sidenav h2 {
-font-size: 1.2rem;
-margin-bottom: 20px;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  margin-left: 15px;
 }
  
 /* Sidebar Links */
 .sidenav .sidenav-link {
 display: flex;
 align-items: center;
+cursor: pointer;
 padding: 10px;
 margin: 10px 0;
 text-decoration: none;

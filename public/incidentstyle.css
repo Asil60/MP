@@ -104,7 +104,7 @@ label[for="attack-time-filter"] {
 }
  
 /* View Attack Stats Button (Fixed position within Incident Container) */
-.downlaodExcel {
+.downloadExcel {
   position: absolute;
   top: 70px;
   right: 20px;
@@ -119,7 +119,7 @@ label[for="attack-time-filter"] {
   transition: background-color 0.3s ease;
 }
  
-.downlaodExcel:hover {
+.downloadExcel:hover {
   background-color: #4059d1;
 }
  
@@ -279,19 +279,29 @@ body {
   height: 100vh; /* Full height */
   width: 250px; /* Fixed width */
   box-sizing: border-box;
-  overflow-y: auto; /* Allow scrolling if content overflows */
+ 
+}
+ 
+/* Sidebar Header */
+.dashboard-image {
+  width: 70px;   /* Adjust the size to your needs */
+  height: 70px;  /* Adjust the size to your needs */
+  margin-bottom: 10px;  /* Add some space below the image */
+  margin-left: 65px;
 }
  
 /* Sidebar Header */
 .sidenav h2 {
   font-size: 1.2rem;
   margin-bottom: 20px;
+  margin-left: 15px;
 }
  
 /* Sidebar Links */
 .sidenav .sidenav-link {
   display: flex;
   align-items: center;
+  cursor: pointer;
   padding: 10px;
   margin: 10px 0;
   text-decoration: none;
@@ -541,68 +551,134 @@ color: #ff4d4d;
 }
  
 /* Modal Header */
-.modal-content h3 {
-font-size: 22px;
-font-weight: bold;
-color: #333;
-margin-bottom: 20px;
-border-bottom: 2px solid #f1f1f1;
-padding-bottom: 10px;
+/* Modal Styling */
+
+
+/* Modal Content Styling */
+#ticket-modal .modal-content {
+  background-color: #f9f9f9; /* Slightly light background for the modal */
+  padding: 20px;
+  margin: 0;
+  width: 100%;
+  max-width: 450px; /* Further reduce the modal size */
+  border-radius: 12px;
+  position: relative;
+  margin-left: 600px;
+  margin-top: 50px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  animation: fadeIn 0.3s ease-in-out; /* Smooth fade-in animation */
+  font-size: 14px; /* Reduced font size for a compact look */
 }
- 
-/* Modal Details */
-.modal-content p {
-font-size: 16px;
-color: #555;
-line-height: 1.6;
-margin-bottom: 15px;
+
+/* Modal Header */
+#ticket-modal .modal-content h3 {
+  font-size: 22px;
+  font-weight: bold;
+  color: #4caf50; /* Green header color */
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+  border-bottom: 2px solid #4caf50; /* Green bottom border for separation */
 }
- 
-.modal-content p strong {
-font-weight: bold;
-color: #333;
+
+/* Ticket Info Layout (Grid Layout) */
+.ticket-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns layout */
+  gap: 12px; /* Reduced space between sections */
+  margin-bottom: 15px;
 }
- 
-/* Resolve Button */
+
+/* Individual Ticket Items */
+.ticket-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Space between label and value */
+}
+
+/* Ticket Box Styling */
+.ticket-box {
+  padding: 8px;
+  background-color: #e9ecef; /* Subtle background color */
+  border-radius: 6px;
+  border: 1px solid #ccc; /* Light gray border */
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Soft shadow */
+}
+
+/* Labels for Ticket Info */
+.ticket-item p {
+  font-weight: bold;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Closing Statement Input */
+#closing-statement-section {
+  margin-top: 15px;
+}
+
+#closing-statement-section input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  margin-bottom: 15px;
+  transition: border 0.3s ease;
+}
+
+#closing-statement-section input:focus {
+  border-color: #007bff; /* Blue border on focus */
+  outline: none;
+}
+
+/* Mark as Resolved Button */
 #resolve-btn {
-background: #28a745;
-color: white;
-padding: 10px 15px;
-border: none;
-font-size: 14px;
-cursor: pointer;
-margin-top: 15px;
-border-radius: 6px;
-display: block;
-width: 100%;
-transition: background 0.2s ease-in-out;
+  background-color: #4caf50; /* Green background */
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+  margin-top: 15px;
 }
- 
+
 #resolve-btn:hover {
-background: #218838;
+  background-color: #218838; /* Darker green on hover */
 }
- 
+
 #resolve-btn:disabled {
-background: #b1b1b1;
-cursor: not-allowed;
+  background-color: #b1b1b1;
+  cursor: not-allowed;
 }
+
+/* Modal Fade-in Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+ 
+
+
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
  
 /* General Responsive Adjustments */
 @media screen and (max-width: 1024px) {
@@ -702,3 +778,4 @@ cursor: not-allowed;
 * {
   transition: all 0.3s ease-in-out;
 }
+

@@ -25,9 +25,10 @@
 <div class="layout-container">
   <!-- Sidebar -->
   <div class="sidenav">
+    <img src="./images/white_lp.png" alt="System Dashboard Image" class="dashboard-image">
     <h2 class="titles">System Dashboard</h2>
     <a href="./panel.html" class="sidenav-link">
-      <span class="icon">ℹ️</span> <span class="text">System Information</span>
+      <span class="icon">ℹ️</span> <span class="text">Reverse Proxy</span>
     </a>
     <a href="./serverA.html" class="sidenav-link">
       <span class="icon">🖥️</span> <span class="text">Server A</span>
@@ -65,7 +66,7 @@
  
     <!-- Button to View Attack Frequency Statistics -->
     <button id="view-attack-stats-btn" class="view-attack-btn">View Attack Frequency Statistics</button>
-    <button id="downlaodExcelbtn" class="downlaodExcel">Download Excel</button>
+    <button id="downloadExcelbtn" class="downloadExcel">Download Excel</button>
  
     <!-- Filter Section -->
     <div class="filter-container">
@@ -113,26 +114,50 @@
  
     <!-- Modal for displaying full ticket details -->
     <div id="ticket-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <h3>Ticket Details</h3>
-        <p><strong>Ticket ID:</strong> <span id="modal-ticket-id"></span></p>
-        <p><strong>Type:</strong> <span id="modal-type"></span></p>
-        <p><strong>Time:</strong> <span id="modal-time"></span></p>
-        <p><strong>IP Address:</strong> <span id="modal-ip"></span></p>
-        <p><strong>URI:</strong> <span id="modal-uri"></span></p>
-        <p><strong>Message:</strong> <span id="modal-message"></span></p>
-        <p><strong>Status:</strong> <span id="modal-status"></span></p>
- 
-        <!-- Closing Statement Input (Only visible when resolving) -->
-        <div id="closing-statement-section">
-          <label for="closing-statement"><strong>Closing Statement:</strong></label>
-          <input type="text" id="closing-statement" placeholder="Enter a closing statement..." required>
-        </div>
- 
-        <button id="resolve-btn" disabled>Mark as Resolved</button>
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3>Ticket Details</h3>
+    <div class="ticket-info">
+      <div class="ticket-item">
+        <p><strong>Ticket ID:</strong></p>
+        <div id="modal-ticket-id" class="ticket-box"></div>
+      </div>
+      <div class="ticket-item">
+        <p><strong>Type:</strong></p>
+        <div id="modal-type" class="ticket-box"></div>
+      </div>
+      <div class="ticket-item">
+        <p><strong>Time:</strong></p>
+        <div id="modal-time" class="ticket-box"></div>
+      </div>
+      <div class="ticket-item">
+        <p><strong>IP Address:</strong></p>
+        <div id="modal-ip" class="ticket-box"></div>
+      </div>
+      <div class="ticket-item">
+        <p><strong>URI:</strong></p>
+        <div id="modal-uri" class="ticket-box"></div>
+      </div>
+      <div class="ticket-item">
+        <p><strong>Message:</strong></p>
+        <div id="modal-message" class="ticket-box"></div>
+      </div>
+      <div class="ticket-item">
+        <p><strong>Status:</strong></p>
+        <div id="modal-status" class="ticket-box"></div>
       </div>
     </div>
+
+    <!-- Closing Statement Input (Only visible when resolving) -->
+    <div id="closing-statement-section">
+      <label for="closing-statement"><strong>Closing Statement:</strong></label>
+      <input type="text" id="closing-statement" placeholder="Enter a closing statement..." required>
+    </div>
+
+    <button id="resolve-btn" disabled>Mark as Resolved</button>
+  </div>
+</div>
+
   </div>
  
   <!-- Attack Frequency Statistics Modal -->
@@ -209,7 +234,7 @@ window.onclick = function(event) {
  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
 <script>
-  document.getElementById('downlaodExcelbtn').addEventListener('click', function () {
+  document.getElementById('downloadExcelbtn').addEventListener('click', function () {
     // Collecting all tickets from localStorage or your data store
     const tickets = JSON.parse(localStorage.getItem("incidentTickets")) || [];
  

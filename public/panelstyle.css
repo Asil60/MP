@@ -29,19 +29,29 @@ body {
   height: 100vh; /* Full height */
   width: 250px; /* Fixed width */
   box-sizing: border-box;
-  overflow-y: auto; /* Allow scrolling if content overflows */
+ 
 }
  
 /* Sidebar Header */
+.dashboard-image {
+  width: 70px;   /* Adjust the size to your needs */
+  height: 70px;  /* Adjust the size to your needs */
+  margin-bottom: 10px;  /* Add some space below the image */
+  margin-left: 65px;
+}
+
+
 .sidenav h2 {
   font-size: 1.2rem;
   margin-bottom: 20px;
+  margin-left: 15px;
 }
  
 /* Sidebar Links */
 .sidenav .sidenav-link {
   display: flex;
   align-items: center;
+  cursor: pointer;
   padding: 10px;
   margin: 10px 0;
   text-decoration: none;
@@ -82,6 +92,7 @@ body {
 .sidenav .sidenav-link .icon {
   margin-right: 10px;
   font-size: 1.2rem;
+  
 }
  
 /* Account Section */
@@ -223,7 +234,7 @@ body {
   box-shadow: 10px 10px 20px rgba(255, 255, 255, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.05);
   padding: 15px;
   color: #fefbfb;
-  max-width: 250px; /* Fixed size for the first chart */
+  max-width: 350px; /* Fixed size for the first chart */
   flex: 0 0 450px; /* Prevent it from growing or shrinking */
   display: flex;
   flex-direction: column;

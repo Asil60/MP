@@ -44,13 +44,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const attackLogs = JSON.parse(localStorage.getItem("incidentTickets")) || [];
         const selectedHours = parseInt(attackTimeFilter.value, 10);
         const now = new Date();
- 
+
         const filteredLogs = attackLogs.filter(log => {
             const logTime = new Date(log.time);
             const timeDiff = (now - logTime) / (1000 * 60 * 60); // Convert to hours
             return timeDiff <= selectedHours;
         });
- 
+
         // Count occurrences of each attack type
         const attackCounts = {};
         filteredLogs.forEach(log => {
@@ -58,15 +58,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 attackCounts[log.type] = (attackCounts[log.type] || 0) + 1;
             }
         });
- 
+
         // Populate table
         attackTableBody.innerHTML = "";
         Object.entries(attackCounts).forEach(([attackType, count]) => {
             const row = document.createElement("tr");
-            row.innerHTML = `<td>${attackType}</td><td>${count}</td>`;
+
+            // Determine inline styles for the content
+            const attackTypeStyle = "color: #007bff; font-weight: bold; text-align: center;"; // Blue, bold for attack type
+            const countStyle = count > 5 ? "color: #ff4d4d; font-weight: bold;" : "color: #28a745; font-weight: bold;"; // Red for counts > 5, green otherwise
+
+            row.innerHTML = `
+                <td style="${attackTypeStyle}">${attackType}</td>
+                <td style="${countStyle}">${count}</td>
+            `;
+
             attackTableBody.appendChild(row);
         });
     }
+
  
     // Event listener for changing time filter
     attackTimeFilter.addEventListener("change", loadAttackFrequency);
@@ -93,50 +103,39 @@ document.addEventListener("DOMContentLoaded", function () {
  
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
  
     function loadIncidentTickets(page = 1) {
-        // Sorting before displaying
-        applySorting();
- 
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const currentTickets = filteredTickets.slice(start, end);
- 
-        incidentBody.innerHTML = "";
-        currentTickets.forEach(ticket => {
-            const row = document.createElement("tr");
- 
-            row.innerHTML = `
-                <td class="ticket-id" data-id="${ticket.id}">${ticket.id}</td>
-                <td class="time">${ticket.time}</td>
-                <td class="status">${ticket.status}</td>
-            `;
- 
-            row.querySelector(".ticket-id").addEventListener("click", function () {
-                openTicketModal(ticket);
-            });
- 
-            incidentBody.appendChild(row);
+    // Sorting before displaying
+    applySorting();
+
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const currentTickets = filteredTickets.slice(start, end);
+
+    incidentBody.innerHTML = "";
+    currentTickets.forEach(ticket => {
+        const row = document.createElement("tr");
+
+        // Determine color based on ticket status
+        const statusColor = ticket.status.toLowerCase() === "pending" ? "#ff4d4d" : "#28a745";
+
+        row.innerHTML = `
+            <td class="ticket-id" data-id="${ticket.id}">${ticket.id}</td>
+            <td class="time">${ticket.time}</td>
+            <td class="status" style="color: ${statusColor}; font-weight: bold;">${ticket.status}</td>
+        `;
+
+        row.querySelector(".ticket-id").addEventListener("click", function () {
+            openTicketModal(ticket);
         });
- 
-        updatePaginationControls();
-    }
+
+        incidentBody.appendChild(row);
+    });
+
+    updatePaginationControls();
+}
+
  
     function updatePaginationControls() {
         const totalPages = Math.ceil(filteredTickets.length / rowsPerPage);
