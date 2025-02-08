@@ -28,6 +28,8 @@ async function fetchCPUUsageA() {
 // Function to fetch CPU usage (Range Selection)
 async function fetchCPUUsageARange(start) {
   try {
+    if (!isLiveModeActiveA && !start) return; // Ensure live mode is off and start time exists
+    
     const response = await fetch(`/cpu-usageservera-range?start=${start}`);
     const data = await response.json();
     if (!data.success) throw new Error(data.error || "No CPU data available.");

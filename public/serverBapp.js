@@ -22,6 +22,8 @@ async function fetchCPUUsage() {
       document.getElementById("cpu-refresh-timeB").textContent = "";
     }
   }
+
+  
  
  
 // Function to fetch RAM usage

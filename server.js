@@ -1456,50 +1456,63 @@ app.get("/modsecurity-attacks", async (req, res) => {
 });
 
 
-// Endpoint to fetch Nginx logs for the past 1 hour
 app.get("/nginx-logs", async (req, res) => {
   try {
-    const start = Math.floor(Date.now() / 1000) - 3600; // Start time (1 hour ago)
-    const end = Math.floor(Date.now() / 1000); // Current time
+    const start = Math.floor(Date.now() / 1000) - 3600; 
+    const end = Math.floor(Date.now() / 1000);
 
-    const query = `{job="nginx"}`; // Loki query
+    const query = `{job="nginx"}`; 
 
     const response = await axios.get(LOKI_API_URL, {
-      params: {
-        query,
-        start,
-        end,
-        step: 10, // Adjust for better resolution
-      },
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-      },
+      params: { query, start, end, step: 10 },
+      headers: { Authorization: `Bearer ${API_KEY}` },
     });
 
+    console.log("Full Loki response:", JSON.stringify(response.data, null, 2));
 
     const result = response.data.data.result;
 
-    // Extract log messages only (removing timestamp)
+    // Regex to extract details from plaintext logs
+    const logRegex = /(\d+\.\d+\.\d+\.\d+) - - \[(.*?)\] \"(\w+) (.*?) HTTP\/[\d.]+\" (\d+) \d+ \"-\" \"(.*?)\"/;
+
     const extractedLogs = result.flatMap((entry) =>
       entry.values.map((log) => {
         try {
-          const logData = JSON.parse(log[1]); // Convert log message to JSON
-          return logData;
+          const logMessage = log[1];
+
+          // If log is JSON, parse it
+          if (logMessage.startsWith("{")) {  
+            return JSON.parse(logMessage);  
+          } else {
+            // Match and extract details from plaintext log
+            const match = logMessage.match(logRegex);
+            if (match) {
+              return {
+                time: match[2],           // Extracted timestamp
+                remote_addr: match[1],    // Client IP
+                status: match[5],         // HTTP status code
+                method: match[3],         // HTTP method (GET/POST)
+                request: match[4],        // Request path
+                user_agent: match[6]      // User-Agent string
+              };
+            } else {
+              console.warn("Skipping unrecognized log format:", logMessage);
+              return null;  // Ignore logs that don't match the expected format
+            }
+          }
         } catch (error) {
-          console.error("Error parsing log data:", error.message);
+          console.error("Error parsing Nginx log data:", log[1]);
           return null;
         }
       })
     ).filter(log => log !== null);
 
-    // Send structured logs to the frontend
     res.json(extractedLogs);
   } catch (error) {
     console.error("Error fetching Nginx logs:", error.message);
     res.status(500).send("Failed to fetch Nginx logs.");
   }
 });
-
 
 
 app.get("/nginx-logs-range", async (req, res) => {
@@ -1524,15 +1537,38 @@ app.get("/nginx-logs-range", async (req, res) => {
       return res.json({ success: false, error: "No data available for the range." });
     }
 
+    // Regex to extract details from plaintext logs
+    const logRegex = /(\d+\.\d+\.\d+\.\d+) - - \[(.*?)\] \"(\w+) (.*?) HTTP\/[\d.]+\" (\d+) \d+ \"-\" \"(.*?)\"/;
+
     // Extract and format logs
     const extractedLogs = result.flatMap((entry) =>
       entry.values.map((log) => {
         try {
-          const timestamp = new Date(parseInt(log[0]) * 1000).toLocaleString();
-          const logData = JSON.parse(log[1]); // Convert log message to JSON
-          return { timestamp, ...logData };
+          const logMessage = log[1];
+          const timestamp = new Date(parseInt(log[0]) / 1000000).toISOString(); // Convert Loki timestamp
+
+          // If log is JSON, parse it
+          if (logMessage.startsWith("{")) {  
+            return { timestamp, ...JSON.parse(logMessage) };
+          } else {
+            // Match and extract details from plaintext log
+            const match = logMessage.match(logRegex);
+            if (match) {
+              return {
+                timestamp: timestamp,   // Convert Unix timestamp
+                remote_addr: match[1],  // Client IP
+                status: match[5],       // HTTP status code
+                method: match[3],       // HTTP method (GET/POST)
+                request: match[4],      // Request path
+                user_agent: match[6]    // User-Agent string
+              };
+            } else {
+              console.warn("Skipping unrecognized log format:", logMessage);
+              return null;  // Ignore logs that don't match the expected format
+            }
+          }
         } catch (error) {
-          console.error("Error parsing log data:", error.message);
+          console.error("Error parsing Nginx range log data:", log[1]);
           return null;
         }
       })
@@ -1544,6 +1580,7 @@ app.get("/nginx-logs-range", async (req, res) => {
     res.status(500).json({ success: false, error: "Failed to fetch Nginx logs for range." });
   }
 });
+
 
 
 
@@ -2228,6 +2265,170 @@ app.get("/docker-statusB", async (req, res) => {
     res.status(500).send("Failed to fetch Docker status.");
   }
 });
+
+
+
+// ✅ CPU Usage - Range
+app.get("/cpu-usageserverb-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="10.0.2.208:9100"}[1m])))';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEB, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({ success: true, data: result[0].values.map(entry => ({ timestamp: entry[0], value: parseFloat(entry[1]) })) });
+  } catch (error) {
+    console.error("Error fetching CPU usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch CPU usage range data." });
+  }
+});
+
+// ✅ RAM Usage - Range with Average Calculation
+app.get("/ram-usageserverb-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 * (1 - (node_memory_MemAvailable_bytes{instance="10.0.2.208:9100"} / node_memory_MemTotal_bytes{instance="10.0.2.208:9100"}))';
+    
+    const response = await axios.get(GRAFANA_API_URL_RANGEB, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    // Extract values and compute the average RAM usage
+    const ramValues = result[0].values.map(entry => parseFloat(entry[1]));
+    const averageRAM = ramValues.reduce((sum, val) => sum + val, 0) / ramValues.length;
+
+    res.json({
+      success: true,
+      average: parseFloat(averageRAM.toFixed(2)), // Rounded to 2 decimal places
+      data: result[0].values.map(entry => ({
+        timestamp: entry[0],
+        value: parseFloat(entry[1])
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching RAM usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch RAM usage range data." });
+  }
+});
+
+
+// ✅ Root FS Usage - Range
+app.get("/root-fs-usageserverb-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 - ((node_filesystem_avail_bytes{instance="10.0.2.208:9100", mountpoint="/", fstype!="rootfs"} * 100) / node_filesystem_size_bytes{instance="10.0.2.208:9100", mountpoint="/", fstype!="rootfs"})';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEB, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({ success: true, data: result[0].values.map(entry => ({ timestamp: entry[0], value: parseFloat(entry[1]) })) });
+  } catch (error) {
+    console.error("Error fetching Root FS usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Root FS usage range data." });
+  }
+});
+
+// ✅ Requests & Errors Over Time - Range
+app.get("/requests-errorsserverb-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = 'irate(node_network_receive_errs_total{instance="10.0.2.208:9100"}[5m])';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEB, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({
+      success: true,
+      data: result.map((item) => ({
+        timestamps: item.values.map(entry => new Date(entry[0] * 1000).toLocaleString()),
+        values: item.values.map(entry => parseFloat(entry[1])),
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching Requests & Errors range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Requests & Errors range data." });
+  }
+});
+
+// ✅ Network Traffic Over Time - Range
+app.get("/requests-networktrafficb-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = 'irate(node_network_receive_packets_total{instance="10.0.2.208:9100"}[5m])';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEB, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({
+      success: true,
+      data: result.map((item) => ({
+        name: Object.values(item.metric).join(" - "),
+        timestamps: item.values.map(entry => new Date(entry[0] * 1000).toLocaleString()),
+        values: item.values.map(entry => parseFloat(entry[1])),
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching Network Traffic range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Network Traffic range data." });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
