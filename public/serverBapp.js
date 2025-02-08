@@ -158,6 +158,8 @@ async function fetchServerUptime() {
                 },
             });
         }
+        const now = new Date();
+        document.getElementById("r-refresh-timeB").textContent = `Last updated at ${now.toLocaleTimeString()}`;
     } catch (error) {
         console.error("Error updating the chart:", error);
     }
