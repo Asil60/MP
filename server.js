@@ -512,8 +512,22 @@ app.post("/summarize-servera", async (req, res) => {
       `;
     }
 
-    // ✅ Extract & Summarize Remote IP Activity
-    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+    // ✅ Extract & Summarize Network Traffic Data (Replacing Remote IPs)
+    let networkTrafficSummary = "No network traffic data available.";
+    if (data.networkTraffic && Array.isArray(data.networkTraffic)) {
+      networkTrafficSummary = data.networkTraffic.map(dataset => {
+        const latestTrafficTime = dataset.timestamps[dataset.timestamps.length - 1] || "N/A";
+        const latestTrafficValue = dataset.values[dataset.values.length - 1] || "N/A";
+        const avgTrafficValue =
+          dataset.values.reduce((sum, val) => sum + val, 0) / dataset.values.length;
+
+        return `
+        - **${dataset.label}**:
+          - Latest traffic at ${latestTrafficTime}: ${latestTrafficValue} packets/sec
+          - Average traffic over the past hour: ${avgTrafficValue.toFixed(2)} packets/sec
+        `;
+      }).join("\n");
+    }
 
     // ✅ Construct GPT Prompt
     const prompt = `
@@ -527,13 +541,13 @@ You are an expert system monitoring assistant. Analyze the following system data
 🚨 **Request Errors Trend:**
 ${requestErrorsSummary}
 
-🌍 **Remote IP Requests:**
-${remoteIPs}
+📡 **Network Traffic Summary:**
+${networkTrafficSummary}
 
 1️⃣ **Summarize the current state of Server A.**
 2️⃣ Predict what might happen if these trends continue for the next 24 hours.
 3️⃣ Explain what this data means for maintaining optimal system performance in Server A.
-4️⃣ Identify potential bottlenecks or issues from the request-error trends and remote IP activity, then suggest solutions.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and network traffic, then suggest solutions.
 5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
 `;
 
@@ -559,7 +573,6 @@ ${remoteIPs}
     res.status(500).send("Failed to generate summary for Server A.");
   }
 });
-
 
 
 
@@ -596,8 +609,22 @@ app.post("/summarize-serverb", async (req, res) => {
       `;
     }
 
-    // ✅ Extract & Summarize Remote IP Activity
-    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+    // ✅ Extract & Summarize Network Traffic Data (Replacing Remote IPs)
+    let networkTrafficSummary = "No network traffic data available.";
+    if (data.networkTraffic && Array.isArray(data.networkTraffic)) {
+      networkTrafficSummary = data.networkTraffic.map(dataset => {
+        const latestTrafficTime = dataset.timestamps[dataset.timestamps.length - 1] || "N/A";
+        const latestTrafficValue = dataset.values[dataset.values.length - 1] || "N/A";
+        const avgTrafficValue =
+          dataset.values.reduce((sum, val) => sum + val, 0) / dataset.values.length;
+
+        return `
+        - **${dataset.label}**:
+          - Latest traffic at ${latestTrafficTime}: ${latestTrafficValue} packets/sec
+          - Average traffic over the past hour: ${avgTrafficValue.toFixed(2)} packets/sec
+        `;
+      }).join("\n");
+    }
 
     // ✅ Construct GPT Prompt
     const prompt = `
@@ -611,13 +638,13 @@ You are an expert system monitoring assistant. Analyze the following system data
 🚨 **Request Errors Trend:**
 ${requestErrorsSummary}
 
-🌍 **Remote IP Requests:**
-${remoteIPs}
+📡 **Network Traffic Summary:**
+${networkTrafficSummary}
 
 1️⃣ **Summarize the current state of Server B.**
 2️⃣ Predict what might happen if these trends continue for the next 24 hours.
 3️⃣ Explain what this data means for maintaining optimal system performance in Server B.
-4️⃣ Identify potential bottlenecks or issues from the request-error trends and remote IP activity, then suggest solutions.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and network traffic, then suggest solutions.
 5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
 `;
 
@@ -668,8 +695,7 @@ app.post("/summarize-serverc", async (req, res) => {
       const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
       const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
       const avgValue =
-        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
-        data.requestsErrors.values.length;
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) / data.requestsErrors.values.length;
 
       requestErrorsSummary = `
       - Latest request-error count at ${latestTime}: ${latestValue}
@@ -677,8 +703,22 @@ app.post("/summarize-serverc", async (req, res) => {
       `;
     }
 
-    // ✅ Extract & Summarize Remote IP Activity
-    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+    // ✅ Extract & Summarize Network Traffic Data (Replacing Remote IPs)
+    let networkTrafficSummary = "No network traffic data available.";
+    if (data.networkTraffic && Array.isArray(data.networkTraffic)) {
+      networkTrafficSummary = data.networkTraffic.map(dataset => {
+        const latestTrafficTime = dataset.timestamps[dataset.timestamps.length - 1] || "N/A";
+        const latestTrafficValue = dataset.values[dataset.values.length - 1] || "N/A";
+        const avgTrafficValue =
+          dataset.values.reduce((sum, val) => sum + val, 0) / dataset.values.length;
+
+        return `
+        - **${dataset.label}**:
+          - Latest traffic at ${latestTrafficTime}: ${latestTrafficValue} packets/sec
+          - Average traffic over the past hour: ${avgTrafficValue.toFixed(2)} packets/sec
+        `;
+      }).join("\n");
+    }
 
     // ✅ Construct GPT Prompt
     const prompt = `
@@ -692,13 +732,13 @@ You are an expert system monitoring assistant. Analyze the following system data
 🚨 **Request Errors Trend:**
 ${requestErrorsSummary}
 
-🌍 **Remote IP Requests:**
-${remoteIPs}
+📡 **Network Traffic Summary:**
+${networkTrafficSummary}
 
 1️⃣ **Summarize the current state of Server C.**
 2️⃣ Predict what might happen if these trends continue for the next 24 hours.
 3️⃣ Explain what this data means for maintaining optimal system performance in Server C.
-4️⃣ Identify potential bottlenecks or issues from the request-error trends and remote IP activity, then suggest solutions.
+4️⃣ Identify potential bottlenecks or issues from the request-error trends and network traffic, then suggest solutions.
 5️⃣ Based on the request-error trends and uptime data, indicate whether the system is experiencing stable uptime or potential downtime.
 `;
 
@@ -724,6 +764,7 @@ ${remoteIPs}
     res.status(500).send("Failed to generate summary for Server C.");
   }
 });
+
 
 
 
@@ -879,8 +920,22 @@ app.post("/askgpt-servera", async (req, res) => {
       `;
     }
 
-    // ✅ Extract Remote IP Activity
-    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+    // ✅ Extract & Summarize Network Traffic Data (Replacing Remote IPs)
+    let networkTrafficSummary = "No network traffic data available.";
+    if (data.networkTraffic && Array.isArray(data.networkTraffic)) {
+      networkTrafficSummary = data.networkTraffic.map(dataset => {
+        const latestTrafficTime = dataset.timestamps[dataset.timestamps.length - 1] || "N/A";
+        const latestTrafficValue = dataset.values[dataset.values.length - 1] || "N/A";
+        const avgTrafficValue =
+          dataset.values.reduce((sum, val) => sum + val, 0) / dataset.values.length;
+
+        return `
+        - **${dataset.label}**:
+          - Latest traffic at ${latestTrafficTime}: ${latestTrafficValue} packets/sec
+          - Average traffic over the past hour: ${avgTrafficValue.toFixed(2)} packets/sec
+        `;
+      }).join("\n");
+    }
 
     // ✅ Construct GPT Prompt
     const prompt = `
@@ -895,8 +950,8 @@ You are an expert system monitoring assistant. Use the following Server A data t
 🚨 **Request Errors:**
 ${requestErrorsSummary}
 
-🌍 **Remote IP Activity:**
-${remoteIPs}
+📡 **Network Traffic Summary:**
+${networkTrafficSummary}
 
 📌 **User's Question:** "${question}"
 Provide an accurate and detailed answer based on the provided system data.
@@ -949,8 +1004,7 @@ app.post("/askgpt-serverb", async (req, res) => {
       const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
       const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
       const avgValue =
-        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
-        data.requestsErrors.values.length;
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) / data.requestsErrors.values.length;
 
       requestErrorsSummary = `
       - Latest request-error count at ${latestTime}: ${latestValue}
@@ -958,8 +1012,22 @@ app.post("/askgpt-serverb", async (req, res) => {
       `;
     }
 
-    // ✅ Extract Remote IP Activity
-    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+    // ✅ Extract & Summarize Network Traffic Data (Replacing Remote IPs)
+    let networkTrafficSummary = "No network traffic data available.";
+    if (data.networkTraffic && Array.isArray(data.networkTraffic)) {
+      networkTrafficSummary = data.networkTraffic.map(dataset => {
+        const latestTrafficTime = dataset.timestamps[dataset.timestamps.length - 1] || "N/A";
+        const latestTrafficValue = dataset.values[dataset.values.length - 1] || "N/A";
+        const avgTrafficValue =
+          dataset.values.reduce((sum, val) => sum + val, 0) / dataset.values.length;
+
+        return `
+        - **${dataset.label}**:
+          - Latest traffic at ${latestTrafficTime}: ${latestTrafficValue} packets/sec
+          - Average traffic over the past hour: ${avgTrafficValue.toFixed(2)} packets/sec
+        `;
+      }).join("\n");
+    }
 
     // ✅ Construct GPT Prompt
     const prompt = `
@@ -974,8 +1042,8 @@ You are an expert system monitoring assistant. Use the following Server B data t
 🚨 **Request Errors:**
 ${requestErrorsSummary}
 
-🌍 **Remote IP Activity:**
-${remoteIPs}
+📡 **Network Traffic Summary:**
+${networkTrafficSummary}
 
 📌 **User's Question:** "${question}"
 Provide an accurate and detailed answer based on the provided system data.
@@ -1026,8 +1094,7 @@ app.post("/askgpt-serverc", async (req, res) => {
       const latestTime = data.requestsErrors.timestamps[data.requestsErrors.timestamps.length - 1];
       const latestValue = data.requestsErrors.values[data.requestsErrors.values.length - 1];
       const avgValue =
-        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) /
-        data.requestsErrors.values.length;
+        data.requestsErrors.values.reduce((sum, val) => sum + val, 0) / data.requestsErrors.values.length;
 
       requestErrorsSummary = `
       - Latest request-error count at ${latestTime}: ${latestValue}
@@ -1035,8 +1102,22 @@ app.post("/askgpt-serverc", async (req, res) => {
       `;
     }
 
-    // ✅ Extract Remote IP Activity
-    const remoteIPs = data.remoteIPs || "No remote IP activity detected.";
+    // ✅ Extract & Summarize Network Traffic Data (Replacing Remote IPs)
+    let networkTrafficSummary = "No network traffic data available.";
+    if (data.networkTraffic && Array.isArray(data.networkTraffic)) {
+      networkTrafficSummary = data.networkTraffic.map(dataset => {
+        const latestTrafficTime = dataset.timestamps[dataset.timestamps.length - 1] || "N/A";
+        const latestTrafficValue = dataset.values[dataset.values.length - 1] || "N/A";
+        const avgTrafficValue =
+          dataset.values.reduce((sum, val) => sum + val, 0) / dataset.values.length;
+
+        return `
+        - **${dataset.label}**:
+          - Latest traffic at ${latestTrafficTime}: ${latestTrafficValue} packets/sec
+          - Average traffic over the past hour: ${avgTrafficValue.toFixed(2)} packets/sec
+        `;
+      }).join("\n");
+    }
 
     // ✅ Construct GPT Prompt
     const prompt = `
@@ -1051,8 +1132,8 @@ You are an expert system monitoring assistant. Use the following Server C data t
 🚨 **Request Errors:**
 ${requestErrorsSummary}
 
-🌍 **Remote IP Activity:**
-${remoteIPs}
+📡 **Network Traffic Summary:**
+${networkTrafficSummary}
 
 📌 **User's Question:** "${question}"
 Provide an accurate and detailed answer based on the provided system data.
@@ -1755,7 +1836,7 @@ app.get("/requests-networktrafficA", async (req, res) => {
     const startTime = endTime - 3600; // Start time (1 hour ago)
     const step = 60; // Step interval (1 minute)
  
-    console.log(`Fetching data from ${startTime} to ${endTime} with step ${step}`);
+    //console.log(`Fetching data from ${startTime} to ${endTime} with step ${step}`);
  
     if (!API_KEY) {
       console.warn("Warning: API_KEY is not set!");
@@ -1784,7 +1865,7 @@ app.get("/requests-networktrafficA", async (req, res) => {
     const formattedData = resultData.map((item) => {
       // Extract dataset name from `metric` object
       const name = Object.values(item.metric).join(" - "); // Join metric labels for a readable name
-      console.log("Dataset Name:", name);
+      //console.log("Dataset Name:", name);
  
       if (item.values && Array.isArray(item.values)) {
         return {
@@ -1800,7 +1881,7 @@ app.get("/requests-networktrafficA", async (req, res) => {
       return null;
     }).filter(Boolean); // Remove null values
  
-    console.log("Formatted Data with Names:", JSON.stringify(formattedData, null, 2)); // ✅ Debugging: Ensure data is correct
+   // console.log("Formatted Data with Names:", JSON.stringify(formattedData, null, 2)); // ✅ Debugging: Ensure data is correct
  
     res.json({ data: formattedData });
   } catch (error) {
@@ -2276,7 +2357,7 @@ app.get("/cpu-usageserverb-range", async (req, res) => {
   try {
     const end = Math.floor(Date.now() / 1000);
     const step = getStepSize(start, end);
-    const query = '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="10.0.2.208:9100"}[1m])))';
+    const query = '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="10.0.3.229:9100"}[1m])))';
 
     const response = await axios.get(GRAFANA_API_URL_RANGEB, {
       params: { query, start, end, step },
@@ -2301,7 +2382,7 @@ app.get("/ram-usageserverb-range", async (req, res) => {
   try {
     const end = Math.floor(Date.now() / 1000);
     const step = getStepSize(start, end);
-    const query = '100 * (1 - (node_memory_MemAvailable_bytes{instance="10.0.2.208:9100"} / node_memory_MemTotal_bytes{instance="10.0.2.208:9100"}))';
+    const query = '100 * (1 - (node_memory_MemAvailable_bytes{instance="10.0.3.229:9100"} / node_memory_MemTotal_bytes{instance="10.0.3.229:9100"}))';
     
     const response = await axios.get(GRAFANA_API_URL_RANGEB, {
       params: { query, start, end, step },
@@ -2338,7 +2419,7 @@ app.get("/root-fs-usageserverb-range", async (req, res) => {
   try {
     const end = Math.floor(Date.now() / 1000);
     const step = getStepSize(start, end);
-    const query = '100 - ((node_filesystem_avail_bytes{instance="10.0.2.208:9100", mountpoint="/", fstype!="rootfs"} * 100) / node_filesystem_size_bytes{instance="10.0.2.208:9100", mountpoint="/", fstype!="rootfs"})';
+    const query = '100 - ((node_filesystem_avail_bytes{instance="10.0.3.229:9100", mountpoint="/", fstype!="rootfs"} * 100) / node_filesystem_size_bytes{instance="10.0.3.229:9100", mountpoint="/", fstype!="rootfs"})';
 
     const response = await axios.get(GRAFANA_API_URL_RANGEB, {
       params: { query, start, end, step },
@@ -2363,7 +2444,7 @@ app.get("/requests-errorsserverb-range", async (req, res) => {
   try {
     const end = Math.floor(Date.now() / 1000);
     const step = getStepSize(start, end);
-    const query = 'irate(node_network_receive_errs_total{instance="10.0.2.208:9100"}[5m])';
+    const query = 'irate(node_network_receive_errs_total{instance="10.0.3.229:9100"}[5m])';
 
     const response = await axios.get(GRAFANA_API_URL_RANGEB, {
       params: { query, start, end, step },
@@ -2394,7 +2475,7 @@ app.get("/requests-networktrafficb-range", async (req, res) => {
   try {
     const end = Math.floor(Date.now() / 1000);
     const step = getStepSize(start, end);
-    const query = 'irate(node_network_receive_packets_total{instance="10.0.2.208:9100"}[5m])';
+    const query = 'irate(node_network_receive_packets_total{instance="10.0.3.229:9100"}[5m])';
 
     const response = await axios.get(GRAFANA_API_URL_RANGEB, {
       params: { query, start, end, step },
@@ -2691,6 +2772,164 @@ app.get("/docker-statusC", async (req, res) => {
     res.status(500).send("Failed to fetch Docker status.");
   }
 });
+
+
+
+
+// ✅ CPU Usage - Range
+app.get("/cpu-usageserverc-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 * (1 - avg(rate(node_cpu_seconds_total{mode="idle", instance="10.0.4.85:9100"}[1m])))';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEC, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({ success: true, data: result[0].values.map(entry => ({ timestamp: entry[0], value: parseFloat(entry[1]) })) });
+  } catch (error) {
+    console.error("Error fetching CPU usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch CPU usage range data." });
+  }
+});
+
+// ✅ RAM Usage - Range with Average Calculation
+app.get("/ram-usageserverc-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 * (1 - (node_memory_MemAvailable_bytes{instance="10.0.4.85:9100"} / node_memory_MemTotal_bytes{instance="10.0.4.85:9100"}))';
+    
+    const response = await axios.get(GRAFANA_API_URL_RANGEC, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    // Extract values and compute the average RAM usage
+    const ramValues = result[0].values.map(entry => parseFloat(entry[1]));
+    const averageRAM = ramValues.reduce((sum, val) => sum + val, 0) / ramValues.length;
+
+    res.json({
+      success: true,
+      average: parseFloat(averageRAM.toFixed(2)), // Rounded to 2 decimal places
+      data: result[0].values.map(entry => ({
+        timestamp: entry[0],
+        value: parseFloat(entry[1])
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching RAM usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch RAM usage range data." });
+  }
+});
+
+
+// ✅ Root FS Usage - Range
+app.get("/root-fs-usageserverc-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = '100 - ((node_filesystem_avail_bytes{instance="10.0.4.85:9100", mountpoint="/", fstype!="rootfs"} * 100) / node_filesystem_size_bytes{instance="10.0.4.85:9100", mountpoint="/", fstype!="rootfs"})';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEC, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({ success: true, data: result[0].values.map(entry => ({ timestamp: entry[0], value: parseFloat(entry[1]) })) });
+  } catch (error) {
+    console.error("Error fetching Root FS usage range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Root FS usage range data." });
+  }
+});
+
+// ✅ Requests & Errors Over Time - Range
+app.get("/requests-errorsserverc-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = 'irate(node_network_receive_errs_total{instance="10.0.4.85:9100"}[5m])';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEC, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({
+      success: true,
+      data: result.map((item) => ({
+        timestamps: item.values.map(entry => new Date(entry[0] * 1000).toLocaleString()),
+        values: item.values.map(entry => parseFloat(entry[1])),
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching Requests & Errors range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Requests & Errors range data." });
+  }
+});
+
+// ✅ Network Traffic Over Time - Range
+app.get("/requests-networktrafficc-range", async (req, res) => {
+  const { start } = req.query;
+  if (!start) return res.status(400).json({ success: false, error: "Start timestamp is required." });
+
+  try {
+    const end = Math.floor(Date.now() / 1000);
+    const step = getStepSize(start, end);
+    const query = 'irate(node_network_receive_packets_total{instance="10.0.4.85:9100"}[5m])';
+
+    const response = await axios.get(GRAFANA_API_URL_RANGEC, {
+      params: { query, start, end, step },
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
+
+    const result = response.data.data.result;
+    if (!result || result.length === 0) return res.json({ success: false, error: "No data available." });
+
+    res.json({
+      success: true,
+      data: result.map((item) => ({
+        name: Object.values(item.metric).join(" - "),
+        timestamps: item.values.map(entry => new Date(entry[0] * 1000).toLocaleString()),
+        values: item.values.map(entry => parseFloat(entry[1])),
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching Network Traffic range data:", error.message);
+    res.status(500).json({ success: false, error: "Failed to fetch Network Traffic range data." });
+  }
+});
+
+
+
+
+
 
 
 
