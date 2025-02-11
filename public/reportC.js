@@ -1,15 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
     const { jsPDF } = window.jspdf;
-    const API_KEY = "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"; // Replace with your GPT API key
+    const API_KEY = "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"; // Replace with your GPT API key
     const GPT_URL = "https://api.openai.com/v1/chat/completions";
  
     document.getElementById("downloadPDFC").addEventListener("click", async () => {
         try {
-            Swal.fire({
-                title: "Downloading!",
-                icon: "success",
-                draggable: true
-              });
             const pdf = new jsPDF("p", "mm", "a4");
  
             // 🔹 Title Page
