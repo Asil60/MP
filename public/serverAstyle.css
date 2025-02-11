@@ -588,11 +588,11 @@ input:checked + .slider:before {
 .summary-section {
   position: fixed;
   bottom: 0;
-  left: 85%;
+  left: 87%;
   transform: translateX(-50%) translateY(100%);
   width: 90%; /* Adjust width for better responsiveness */
   max-width: 400px; /* Smaller, more compact */
-  height: 630px; /* Smaller height */
+  height: 780px; /* Smaller height */
   background: linear-gradient(145deg, #1e1e2e, #2f2f4f);
   color: #fff;
   box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.5);
@@ -622,7 +622,7 @@ input:checked + .slider:before {
 .summary-section .value {
   font-size: 0.85rem;
   padding: 10px;
-  height: 150px; /* Smaller height */
+  height: 300px; /* Smaller height */
   background-color: #000000;
   color: #bbb;
   border-radius: 6px;
