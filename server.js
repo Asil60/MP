@@ -19,7 +19,7 @@ const API_KEY = "glsa_YVEZzcvnH5yrMZhyNMUi8iomZgEv8sps_33763bf6"; // Replace wit
 
 // OpenAI API configuration
 const openai = new OpenAI({
-  apiKey: "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", // Replace with your OpenAI API key
+  apiKey: "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", // Replace with your OpenAI API key
 });
 
 // Middleware to serve static files and parse JSON

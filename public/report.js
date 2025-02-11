@@ -1,10 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
     const { jsPDF } = window.jspdf;
-    const API_KEY = "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"; // Replace with your GPT API key
+    const API_KEY = "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"; // Replace with your GPT API key
     const GPT_URL = "https://api.openai.com/v1/chat/completions";
  
     document.getElementById("downloadPDF").addEventListener("click", async () => {
         try {
+            // Show Swal with progress bar
+            const swalInstance = Swal.fire({
+                title: "Downloading!",
+                html: '<div style="width: 100%;"><progress id="progressBar" value="0" max="100" style="width: 100%;"></progress></div>',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                onBeforeOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             const pdf = new jsPDF("p", "mm", "a4");
  
             // 🔹 Title Page
@@ -61,10 +72,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 startY: 30,
                 head: [systemMetrics[0]],
                 body: systemMetrics.slice(1),
-                theme: "grid", // Full grid for better segmentation
-                headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                bodyStyles: { fontSize: 10 },
+                theme: "grid",
+                headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12, halign: "center" },
+                bodyStyles: { fontSize: 10, valign: "middle" },
+                columnStyles: {
+                    0: { cellWidth: 70, halign: "left" },
+                    1: { cellWidth: 100, halign: "center" }
+                },
             });
+
+            // Update progress bar
+            updateProgressBar(10);
  
             // 🔹 Data Refresh Times Section
             pdf.addPage();
@@ -86,12 +104,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 startY: 30,
                 head: [refreshTimes[0]],
                 body: refreshTimes.slice(1),
-                theme: "grid", // Full grid
-                headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                bodyStyles: { fontSize: 10 },
+                theme: "grid",
+                headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12, halign: "center" },
+                bodyStyles: { fontSize: 10, valign: "middle" },
+                columnStyles: {
+                    0: { cellWidth: 70, halign: "left" },
+                    1: { cellWidth: 100, halign: "center" }
+                },
             });
+
+            // Update progress bar
+            updateProgressBar(20);
  
-            // 🔹 Chart Section (with Real Data and Image)
+            // 🔹 Chart Section
             const charts = [
                 { id: "requestsErrorsChart", title: "Requests & Errors Over Time" },
                 { id: "statusChart", title: "Nginx Status Over Time" },
@@ -108,6 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     pdf.text(chart.title, 10, 20);
  
                     const chartData = extractChartData(chartElement);
+ 
                     pdf.autoTable({
                         startY: 30,
                         head: [["Label", "Value"]],
@@ -121,7 +147,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     const chartHeight = 100; // Chart height
                     const chartImage = chartElement.toDataURL("image/png");
  
-                    // Check if there's enough space for the image on the current page
                     if (currentY + chartHeight > pageHeight) {
                         pdf.addPage();
                         pdf.addImage(chartImage, "PNG", 10, 20, 190, chartHeight);
@@ -131,27 +156,53 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
  
-            // 🔹 Logs Section
+            // 🔹 ModSecurity Logs Section
             pdf.addPage();
             pdf.setFontSize(22);
             pdf.setFont("helvetica", "bold");
             pdf.setTextColor(0, 102, 204);
             pdf.text("ModSecurity Logs", 10, 20);
- 
+           
             const modSecurityRows = await getTableRows("modsecurity-logs");
             if (modSecurityRows.length > 0) {
                 pdf.autoTable({
                     startY: 30,
                     head: [["#", "Client IP", "Timestamp", "Request", "Rule ID", "Details"]],
                     body: modSecurityRows,
-                    theme: "grid", // Full grid for log segmentation
-                    headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                    bodyStyles: { fontSize: 10 },
+                    theme: "grid",
+                    headStyles: {
+                        fillColor: [0, 102, 204],
+                        textColor: [255, 255, 255],
+                        fontSize: 12,
+                        halign: "center"
+                    },
+                    bodyStyles: {
+                        fontSize: 10,
+                        valign: "middle",
+                        cellPadding: 2
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 8, halign: "center" }, // #
+                        1: { cellWidth: 25, halign: "left" }, // Client IP
+                        2: { cellWidth: 35, halign: "center" }, // Timestamp
+                        3: { cellWidth: 55, halign: "left", overflow: "linebreak" }, // Request
+                        4: { cellWidth: 15, halign: "center" }, // Rule ID
+                        5: { cellWidth: 50, halign: "left", overflow: "linebreak" }, // Details
+                    },
+                    styles: {
+                        overflow: "linebreak", // Ensures long text wraps
+                        minCellHeight: 10, // Minimum height for cells
+                        fontSize: 10 // Ensures text fits within the cell
+                    },
+                    tableWidth: "wrap" // Ensures the table fits within the page
                 });
             } else {
                 pdf.setFontSize(14);
                 pdf.text("No ModSecurity logs available.", 10, 30);
             }
+
+            // Update progress bar
+            updateProgressBar(50);
  
             // 🔹 NGINX Logs Section
             pdf.addPage();
@@ -166,14 +217,25 @@ document.addEventListener("DOMContentLoaded", function () {
                     startY: 30,
                     head: [["#", "Time", "Remote Address", "Status", "Method", "Details"]],
                     body: nginxRows,
-                    theme: "grid", // Full grid
-                    headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12 },
-                    bodyStyles: { fontSize: 10 },
+                    theme: "grid",
+                    headStyles: { fillColor: [0, 102, 204], textColor: [255, 255, 255], fontSize: 12, halign: "center" },
+                    bodyStyles: { fontSize: 10, valign: "middle" },
+                    columnStyles: {
+                        0: { cellWidth: 10, halign: "center" },
+                        1: { cellWidth: 30, halign: "center" },
+                        2: { cellWidth: 50, halign: "left" },
+                        3: { cellWidth: 20, halign: "center" },
+                        4: { cellWidth: 20, halign: "center" },
+                        5: { cellWidth: 60, halign: "left", overflow: "linebreak" },
+                    },
                 });
             } else {
                 pdf.setFontSize(14);
                 pdf.text("No NGINX logs available.", 10, 30);
             }
+
+            // Update progress bar
+            updateProgressBar(70);
  
             // 🔹 GPT Insights Section
             pdf.addPage();
@@ -182,42 +244,61 @@ document.addEventListener("DOMContentLoaded", function () {
             pdf.setTextColor(0, 102, 204);
             pdf.text("AI-Powered Insights", 10, 20);
  
-            const gptInsights = await generateGPTInsights(systemMetrics); // Pass metrics to GPT
-            const paragraphs = gptInsights.split("\n\n"); // Split insights into paragraphs
+            const gptInsights = await generateGPTInsights(systemMetrics);
+            const paragraphs = gptInsights.split("\n\n");
             let y = 30;
  
-            const pageWidth = pdf.internal.pageSize.width - 20; // Account for margins
+            const pageWidth = pdf.internal.pageSize.width - 20;
  
-            // Add Section Titles and Horizontal Lines
             paragraphs.forEach((paragraph, index) => {
                 if (index === 1) {
                     pdf.setDrawColor(200);
                     pdf.setLineWidth(0.5);
-                    pdf.line(10, y - 5, 200, y - 5); // Horizontal line to separate sections
+                    pdf.line(10, y - 5, 200, y - 5);
                 }
  
                 const lines = pdf.splitTextToSize(paragraph, pageWidth);
                 lines.forEach((line) => {
                     if (y > pageHeight - 20) {
                         pdf.addPage();
-                        y = 20; // Reset Y-coordinate for the new page
+                        y = 20;
                     }
-                    pdf.setFontSize(12); // Regular font size
+                    pdf.setFontSize(12);
                     pdf.setFont("helvetica", "normal");
-                    pdf.setTextColor(0, 0, 0); // Black text for body
+                    pdf.setTextColor(0, 0, 0);
                     pdf.text(line, 10, y);
-                    y += 8; // Add line spacing
+                    y += 8;
                 });
-                y += 10; // Add extra spacing between paragraphs
+                y += 10;
             });
+
+            // Update progress bar
+            updateProgressBar(90);
  
-            // Save the PDF
             pdf.save("Lumiere_Proxy_RP_Report.pdf");
+
+            // Final update to progress bar
+            updateProgressBar(100);
+            Swal.fire({
+                title: "Download Complete!",
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+
         } catch (error) {
             console.error("Error generating PDF:", error);
             alert("An error occurred while generating the report. Please try again.");
         }
     });
+
+
+
+    function updateProgressBar(value) {
+        const progressBar = document.getElementById("progressBar");
+        if (progressBar) {
+            progressBar.value = value;
+        }
+    }
  
     async function generateGPTInsights(metrics) {
         const formattedMetrics = metrics.slice(1).map(([metric, value]) => `${metric}: ${value}`).join("\n");

@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const { jsPDF } = window.jspdf;
-    const API_KEY = "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"; // Replace with your GPT API key
+    const API_KEY = "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"; // Replace with your GPT API key
     const GPT_URL = "https://api.openai.com/v1/chat/completions";
 
     document.getElementById("downloadPDFB").addEventListener("click", async () => {
