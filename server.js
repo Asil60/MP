@@ -1,3 +1,5 @@
+
+require("dotenv").config(); // Load environment variables
 const express = require("express");
 const axios = require("axios");
 const { OpenAI } = require("openai");
@@ -5,22 +7,57 @@ const { OpenAI } = require("openai");
 const app = express();
 const PORT = 3000;
 
+
+
+
+
+// Load API keys and URLs from environment variables
+const API_KEY = process.env.API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const GRAFANA_API_URL = process.env.GRAFANA_API_URL;
+const GRAFANA_API_URLA = process.env.GRAFANA_API_URLA;
+const GRAFANA_API_URLB = process.env.GRAFANA_API_URLB;
+const GRAFANA_API_URLC = process.env.GRAFANA_API_URLC;
+const GRAFANA_API_URL_RANGE = process.env.GRAFANA_API_URL_RANGE;
+const GRAFANA_API_URL_RANGEA = process.env.GRAFANA_API_URL_RANGEA;
+const GRAFANA_API_URL_RANGEB = process.env.GRAFANA_API_URL_RANGEB;
+const GRAFANA_API_URL_RANGEC = process.env.GRAFANA_API_URL_RANGEC;
+const LOKI_API_URL = process.env.LOKI_API_URL;
+
+
+console.log("API_KEY:", API_KEY ? "✅ Loaded" : "❌ Not Found");
+console.log("OPENAI_API_KEY:", OPENAI_API_KEY ? "✅ Loaded" : "❌ Not Found");
+
+// Check if API keys are set correctly
+if (!API_KEY || !OPENAI_API_KEY) {
+    console.error("❌ ERROR: Missing API keys. Set them in .env file.");
+    process.exit(1); // Stop the server if keys are missing
+}
+
+// Initialize OpenAI API with the secure key
+const openai = new OpenAI({
+  apiKey: OPENAI_API_KEY,
+});
+
+
+
+
 // Grafana API configuration
-const GRAFANA_API_URL = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query";
-const GRAFANA_API_URLA = "http://13.251.167.13:3000/api/datasources/proxy/14/api/v1/query";
-const GRAFANA_API_URLB = "http://13.251.167.13:3000/api/datasources/proxy/15/api/v1/query";
-const GRAFANA_API_URLC = "http://13.251.167.13:3000/api/datasources/proxy/16/api/v1/query";
-const GRAFANA_API_URL_RANGE = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query_range";
-const GRAFANA_API_URL_RANGEA = "http://13.251.167.13:3000/api/datasources/proxy/14/api/v1/query_range";
-const GRAFANA_API_URL_RANGEB = "http://13.251.167.13:3000/api/datasources/proxy/15/api/v1/query_range";
-const GRAFANA_API_URL_RANGEC = "http://13.251.167.13:3000/api/datasources/proxy/16/api/v1/query_range";
-const LOKI_API_URL = "http://13.251.167.13:3000/api/datasources/proxy/9/loki/api/v1/query_range";
-const API_KEY = "glsa_YVEZzcvnH5yrMZhyNMUi8iomZgEv8sps_33763bf6"; // Replace with your Grafana API key
+//const GRAFANA_API_URL = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query";
+//const GRAFANA_API_URLA = "http://13.251.167.13:3000/api/datasources/proxy/14/api/v1/query";
+//const GRAFANA_API_URLB = "http://13.251.167.13:3000/api/datasources/proxy/15/api/v1/query";
+//const GRAFANA_API_URLC = "http://13.251.167.13:3000/api/datasources/proxy/16/api/v1/query";
+//const GRAFANA_API_URL_RANGE = "http://13.251.167.13:3000/api/datasources/proxy/11/api/v1/query_range";
+//const GRAFANA_API_URL_RANGEA = "http://13.251.167.13:3000/api/datasources/proxy/14/api/v1/query_range";
+//const GRAFANA_API_URL_RANGEB = "http://13.251.167.13:3000/api/datasources/proxy/15/api/v1/query_range";
+//const GRAFANA_API_URL_RANGEC = "http://13.251.167.13:3000/api/datasources/proxy/16/api/v1/query_range";
+//const LOKI_API_URL = "http://13.251.167.13:3000/api/datasources/proxy/9/loki/api/v1/query_range";
+//const API_KEY = "glsa_YVEZzcvnH5yrMZhyNMUi8iomZgEv8sps_33763bf6"; // Replace with your Grafana API key
 
 // OpenAI API configuration
-const openai = new OpenAI({
-  apiKey: "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", // Replace with your OpenAI API key
-});
+//const openai = new OpenAI({
+  //apiKey: "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", // Replace with your OpenAI API key
+//});
 
 // Middleware to serve static files and parse JSON
 app.use(express.static("public"));
